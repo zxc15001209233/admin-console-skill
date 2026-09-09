@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>会议室预约</title>
+<style>
+  html[data-theme="light"] {
+    --bg-page:#f4f6f8; --bg-sidebar:#1c2430; --bg-topbar:#fff; --bg-card:#fff;
+    --bg-input:#fff; --bg-overlay:rgba(15,20,25,.45); --color-primary:#2f6fed;
+    --border:#e5e9ef; --text-1:#1a1d24; --text-2:#5c6570; --text-3:#8b939e;
+    --text-on-sidebar:rgba(255,255,255,.85); --text-on-primary:#ffffff; --bg-sidebar-hover:rgba(255,255,255,.08);
+    --danger:#d92d20; --success:#079455; --warning:#dc6803;
+  }
+  html[data-theme="dark"] {
+    --bg-page:#0f1419; --bg-sidebar:#0b0e13; --bg-topbar:#161b22; --bg-card:#161b22;
+    --bg-input:#12171d; --bg-overlay:rgba(0,0,0,.55); --color-primary:#4c8dff;
+    --border:#2a3340; --text-1:#e8edf4; --text-2:#9aa8b5; --text-3:#6b7785;
+    --text-on-sidebar:rgba(232,237,244,.9); --text-on-primary:#ffffff; --bg-sidebar-hover:rgba(255,255,255,.08);
+    --danger:#f97066; --success:#3ccb7f; --warning:#f7b267;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.5 "PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg-page); color:var(--text-1); }
+  .app { display:flex; min-height:100vh; }
+  .sidebar { width:232px; background:var(--bg-sidebar); color:var(--text-on-sidebar); padding:16px 0; flex-shrink:0; transition:width .2s; overflow:hidden; }
+  .sidebar.collapsed { width:64px; }
+  .sidebar-head { display:flex; align-items:center; justify-content:space-between; padding:0 12px 16px; gap:4px; }
+  .sidebar-brand { padding:0 4px; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sidebar.collapsed .sidebar-brand { opacity:0; width:0; padding:0; }
+  .sidebar-toggle { flex-shrink:0; width:28px; height:28px; border:0; border-radius:4px; background:transparent; color:var(--text-on-sidebar); cursor:pointer; font:inherit; }
+  .sidebar-toggle:hover { background:var(--bg-sidebar-hover); }
+  .nav-group { margin-bottom:4px; }
+  .nav-group-hd { display:flex; align-items:center; justify-content:space-between; width:100%; padding:8px 16px; border:0; background:transparent; color:var(--text-on-sidebar); font:inherit; cursor:pointer; text-align:left; }
+  .nav-group-hd:hover { background:var(--bg-sidebar-hover); }
+  .nav-group-hd .chevron { transition:transform .2s; }
+  .nav-group.collapsed .nav-group-hd .chevron { transform:rotate(-90deg); }
+  .nav-group.collapsed .nav-group-bd { display:none; }
+  .sidebar.collapsed .nav-group-hd { justify-content:center; padding:8px 0; }
+  .sidebar.collapsed .nav-group-hd span.label,
+  .sidebar.collapsed .nav-group-hd .chevron { display:none; }
+  .sidebar a { display:block; padding:10px 16px; color:var(--text-on-sidebar); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sidebar a:hover { background:var(--bg-sidebar-hover); }
+  .sidebar a.active { background:rgba(255,255,255,.12); }
+  .sidebar.collapsed a { padding:10px; text-align:center; font-size:12px; }
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; }
+  .topbar { height:56px; background:var(--bg-topbar); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 16px; }
+  .breadcrumb { color:var(--text-2); font-size:13px; }
+  .breadcrumb strong { color:var(--text-1); font-weight:500; }
+  .topbar-actions { display:flex; align-items:center; gap:12px; }
+  .topbar select, .topbar button { font:inherit; padding:6px 10px; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text-1); }
+  .user-area { display:flex; align-items:center; gap:8px; color:var(--text-2); font-size:13px; }
+  .user-avatar { width:28px; height:28px; border-radius:50%; background:var(--color-primary); color:var(--text-on-primary); display:flex; align-items:center; justify-content:center; font-size:12px; }
+  .content { padding:20px 24px; flex:1; }
+  .page-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .page-head h1 { margin:0; font-size:20px; }
+  .filter-bar { display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
+  .filter-bar input { padding:6px 10px; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text-1); }
+  .filter-bar label { color:var(--text-2); }
+  table { width:100%; border-collapse:collapse; background:var(--bg-card); }
+  th,td { border:1px solid var(--border); padding:8px 10px; text-align:left; }
+  th { color:var(--text-2); font-weight:500; }
+  .empty { text-align:center; padding:32px; color:var(--text-3); background:var(--bg-card); border:1px solid var(--border); }
+  .pager { margin-top:12px; color:var(--text-2); font-size:13px; }
+  .drawer-mask { display:none; position:fixed; inset:0; background:var(--bg-overlay); z-index:100; }
+  .drawer-mask.open { display:block; }
+  .drawer { position:fixed; top:0; right:0; width:400px; height:100%; background:var(--bg-card); color:var(--text-1); padding:16px; z-index:101; display:flex; flex-direction:column; }
+  .drawer h2 { margin:0 0 16px; font-size:18px; }
+  .drawer label { display:block; margin-bottom:12px; color:var(--text-2); }
+  .drawer input { width:100%; margin-top:4px; padding:6px 10px; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text-1); }
+  .drawer-actions { margin-top:auto; display:flex; gap:8px; justify-content:flex-end; }
+  .toast { position:fixed; right:16px; top:72px; background:var(--bg-card); border:1px solid var(--border); padding:8px 12px; display:none; z-index:200; color:var(--text-1); border-radius:4px; }
+  .toast.show { display:block; }
+  button { cursor:pointer; font:inherit; }
+  button.primary { background:var(--color-primary); color:var(--text-on-primary); border:0; padding:6px 12px; border-radius:4px; }
+  button.ghost { background:transparent; border:1px solid var(--border); color:var(--text-1); padding:6px 12px; border-radius:4px; }
+  button.danger { background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 10px; border-radius:4px; }
+  .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg-page); }
+  .login-card { width:360px; padding:32px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; }
+  .login-card h1 { margin:0 0 24px; font-size:20px; text-align:center; }
+  .login-card label { display:block; margin-bottom:12px; color:var(--text-2); }
+  .login-card input { width:100%; margin-top:4px; padding:8px 10px; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text-1); }
+  .login-card button { width:100%; margin-top:16px; }
+  [data-role="staff"] .role-admin-only { display:none !important; }
+  .hidden { display:none !important; }
+</style>
+</head>
+<body data-role="staff">
+<div class="app" id="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-head">
+      <div class="sidebar-brand">会议室预约</div>
+      <button type="button" class="sidebar-toggle" id="sidebarToggle" title="收起侧栏">☰</button>
+    </div>
+    <div class="nav-group" id="navBiz">
+      <button type="button" class="nav-group-hd" id="navBizToggle"><span class="label">业务管理</span><span class="chevron">▾</span></button>
+      <div class="nav-group-bd">
+        <a href="#/rooms" data-route="rooms">会议室一览</a>
+      </div>
+    </div>
+    <div class="nav-group" id="navScreen">
+      <button type="button" class="nav-group-hd" id="navScreenToggle"><span class="label">数据大屏</span><span class="chevron">▾</span></button>
+      <div class="nav-group-bd">
+        <a href="screen.html">工业分析大屏</a>
+      </div>
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <nav class="breadcrumb" id="breadcrumb">会议室预约 / <strong>会议室一览</strong></nav>
+      <div class="topbar-actions">
+        <button type="button" id="themeBtn">切换主题</button>
+        <select id="roleSel">
+          <option value="staff">员工</option>
+          <option value="admin">管理员</option>
+        </select>
+        <div class="user-area" title="演示身份">
+          <span class="user-avatar">演</span>
+          <span class="user-name">演示用户</span>
+        </div>
+      </div>
+    </header>
+    <main class="content" id="view"></main>
+  </div>
+</div>
+<div class="drawer-mask" id="drawer">
+  <div class="drawer">
+    <h2>新建会议室</h2>
+    <form id="roomForm">
+      <label>名称 *<input type="text" name="name" required placeholder="会议室名称" /></label>
+      <label>楼层 *<input type="text" name="floor" required placeholder="如 3F" /></label>
+      <label>容量 *<input type="number" name="capacity" required min="1" placeholder="人数" /></label>
+      <div class="drawer-actions">
+        <button type="button" class="ghost" id="drawerCancel">取消</button>
+        <button type="submit" class="primary">提交</button>
+      </div>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const USE_MOCK = true;
+const THEME_KEY = 'admin-theme:会议室预约';
+const AUTH_KEY = 'adminAuthed';
+const MOCK = { rooms: [
+  { id: 1, name: '一号会议室', floor: '3F', capacity: 8 },
+  { id: 2, name: '董事会会议室', floor: '5F', capacity: 20 }
+]};
+
+let filterName = '';
+let pendingHash = '';
+let nextId = 3;
+
+const $ = (sel) => document.querySelector(sel);
+const shell = $('#shell');
+const view = $('#view');
+const drawer = $('#drawer');
+const toast = $('#toast');
+const themeBtn = $('#themeBtn');
+const roleSel = $('#roleSel');
+const roomForm = $('#roomForm');
+const sidebar = $('#sidebar');
+const breadcrumb = $('#breadcrumb');
+
+function isAuthed() {
+  return sessionStorage.getItem(AUTH_KEY) === '1';
+}
+
+function showToast(msg) {
+  toast.textContent = msg;
+  toast.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(() => toast.classList.remove('show'), 2500);
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+}
+
+function loadTheme() {
+  const saved = localStorage.getItem(THEME_KEY);
+  applyTheme(saved === 'dark' ? 'dark' : 'light');
+}
+
+function toggleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(cur === 'dark' ? 'light' : 'dark');
+}
+
+function applyRole(role) {
+  document.body.setAttribute('data-role', role);
+}
+
+function toggleSidebar() {
+  sidebar.classList.toggle('collapsed');
+}
+
+function toggleNavGroup(group) {
+  group.classList.toggle('collapsed');
+}
+
+function setBreadcrumb(pageTitle) {
+  breadcrumb.innerHTML = '会议室预约 / <strong>' + pageTitle + '</strong>';
+}
+
+function setActiveNav(route) {
+  sidebar.querySelectorAll('a[data-route]').forEach((a) => {
+    a.classList.toggle('active', a.getAttribute('data-route') === route);
+  });
+}
+
+function getRoute() {
+  const h = location.hash || '#/rooms';
+  if (h.startsWith('#/')) return h.slice(2);
+  return 'rooms';
+}
+
+function navigate(hash) {
+  if (location.hash !== hash) location.hash = hash;
+  else route();
+}
+
+function filteredRooms() {
+  const kw = filterName.trim().toLowerCase();
+  if (!kw) return MOCK.rooms;
+  return MOCK.rooms.filter((r) => r.name.toLowerCase().includes(kw));
+}
+
+function openDrawer() {
+  roomForm.reset();
+  drawer.classList.add('open');
+}
+
+function closeDrawer() {
+  drawer.classList.remove('open');
+}
+
+function renderLogin() {
+  document.querySelectorAll('.login-wrap').forEach((el) => el.remove());
+  shell.classList.add('hidden');
+  view.innerHTML = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'login-wrap';
+  wrap.innerHTML = '<div class="login-card"><h1>登录</h1><form id="loginForm"><label>账号<input type="text" name="user" required placeholder="任意账号" /></label><label>密码<input type="password" name="pwd" required placeholder="任意密码" /></label><button type="submit" class="primary">登录</button></form></div>';
+  document.body.insertBefore(wrap, shell);
+  wrap.querySelector('#loginForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+    sessionStorage.setItem(AUTH_KEY, '1');
+    wrap.remove();
+    const target = pendingHash || '#/rooms';
+    pendingHash = '';
+    navigate(target);
+  });
+}
+
+function renderRooms() {
+  shell.classList.remove('hidden');
+  document.querySelectorAll('.login-wrap').forEach((el) => el.remove());
+  setBreadcrumb('会议室一览');
+  setActiveNav('rooms');
+  const rows = filteredRooms();
+  const total = rows.length;
+  const tableRows = rows.length
+    ? rows.map((r) => '<tr><td>' + r.name + '</td><td>' + r.floor + '</td><td>' + r.capacity + '</td><td><button type="button" class="danger role-admin-only" data-del="' + r.id + '">删除</button></td></tr>').join('')
+    : '';
+  const emptyHtml = rows.length ? '' : '<div class="empty">' + (filterName.trim() ? '未找到匹配的会议室，请调整筛选条件' : '暂无会议室，点击新建添加') + '</div>';
+  view.innerHTML = '<div class="page-head"><h1>会议室一览</h1><button type="button" class="primary" id="btnNew">新建</button></div>'
+    + '<div class="filter-bar"><label>名称 <input type="text" id="filterName" value="' + filterName.replace(/"/g, '&quot;') + '" placeholder="关键字" /></label>'
+    + '<button type="button" class="primary" id="btnSearch">查询</button><button type="button" class="ghost" id="btnReset">重置</button></div>'
+    + (rows.length ? '<table><thead><tr><th>名称</th><th>楼层</th><th>容量</th><th>操作</th></tr></thead><tbody>' + tableRows + '</tbody></table>' : emptyHtml)
+    + '<div class="pager">共 ' + total + ' 条</div>';
+
+  $('#btnNew').addEventListener('click', openDrawer);
+  $('#filterName').addEventListener('input', (e) => { filterName = e.target.value; });
+  $('#btnSearch').addEventListener('click', () => renderRooms());
+  $('#btnReset').addEventListener('click', () => { filterName = ''; renderRooms(); });
+  view.querySelectorAll('[data-del]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const id = Number(btn.getAttribute('data-del'));
+      const room = MOCK.rooms.find((r) => r.id === id);
+      if (!room) return;
+      if (!confirm('确定删除「' + room.name + '」？')) return;
+      const idx = MOCK.rooms.findIndex((r) => r.id === id);
+      if (idx >= 0) MOCK.rooms.splice(idx, 1);
+      showToast('已删除');
+      renderRooms();
+    });
+  });
+}
+
+function route() {
+  const r = getRoute();
+  if (r === 'login') {
+    renderLogin();
+    return;
+  }
+  if (!isAuthed()) {
+    pendingHash = location.hash || '#/rooms';
+    if (location.hash !== '#/login') location.hash = '#/login';
+    else renderLogin();
+    return;
+  }
+  if (r === 'rooms') {
+    renderRooms();
+    return;
+  }
+  navigate('#/rooms');
+}
+
+themeBtn.addEventListener('click', toggleTheme);
+roleSel.addEventListener('change', () => applyRole(roleSel.value));
+$('#sidebarToggle').addEventListener('click', toggleSidebar);
+$('#navBizToggle').addEventListener('click', () => toggleNavGroup($('#navBiz')));
+$('#navScreenToggle').addEventListener('click', () => toggleNavGroup($('#navScreen')));
+$('#drawerCancel').addEventListener('click', closeDrawer);
+roomForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  const fd = new FormData(roomForm);
+  const name = String(fd.get('name') || '').trim();
+  const floor = String(fd.get('floor') || '').trim();
+  const capacity = Number(fd.get('capacity'));
+  if (!name || !floor || !capacity) {
+    showToast('请填写完整信息');
+    return;
+  }
+  MOCK.rooms.push({ id: nextId++, name, floor, capacity });
+  closeDrawer();
+  showToast('新建成功');
+  if (getRoute() === 'rooms') renderRooms();
+});
+
+window.addEventListener('hashchange', route);
+
+loadTheme();
+applyRole(roleSel.value);
+if (!location.hash) location.hash = '#/rooms';
+else route();
+</script>
+</body>
+</html>
