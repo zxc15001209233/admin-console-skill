@@ -13,7 +13,7 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | Token | 色值 | 用途 |
 |---|---|---|
 | `--bg-page` | `#f0f2f5` | 内容区底 |
-| `--bg-sidebar` | `#171b26` | 侧栏底（带靛味的深墨，不是纯黑） |
+| `--bg-sidebar` | `#ffffff` | 侧栏底（浅色：白底，与顶栏同色） |
 | `--bg-topbar` | `#ffffff` | 顶栏底 |
 | `--bg-card` | `#ffffff` | 卡片/表/抽屉 |
 | `--bg-input` | `#ffffff` | 输入框 |
@@ -30,12 +30,12 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--text-1` | `#1a1d24` | 主文案（浅色内容区） |
 | `--text-2` | `#5c6570` | 次文案 |
 | `--text-3` | `#8b939e` | 辅助 / 分组标题 |
-| `--text-on-sidebar` | `rgba(226,232,246,.70)` | 侧栏文字 |
-| `--text-on-sidebar-strong` | `#eef1fb` | 侧栏悬停 / 当前项文字 |
-| `--text-on-primary` | `#ffffff` | 主按钮文字 |
-| `--bg-sidebar-hover` | `rgba(255,255,255,.06)` | 侧栏菜单悬停底 |
-| `--bg-sidebar-active` | `rgba(125,148,248,.16)` | 侧栏当前项底 |
-| `--sidebar-accent` | `#7d94f8` | 侧栏当前项左强调条 / 方标底 |
+| `--text-on-sidebar` | `#5c6570` | 侧栏文字（浅色深字，与 `--text-2` 同值） |
+| `--text-on-sidebar-strong` | `#1a1d24` | 侧栏悬停 / 当前项文字（与 `--text-1` 同值） |
+| `--text-on-primary` | `#ffffff` | 主按钮文字 / 方标字 |
+| `--bg-sidebar-hover` | `#f6f7f9` | 侧栏菜单悬停底（与 `--bg-hover` 同值） |
+| `--bg-sidebar-active` | `#eef1fc` | 侧栏当前项底（与 `--color-primary-soft` 同值） |
+| `--sidebar-accent` | `#3b5bdb` | 侧栏当前项左强调条 / 方标底（浅底可用主色） |
 | `--danger` | `#d92d20` | 删除/错误 |
 | `--success` | `#079455` | 成功 |
 | `--warning` | `#dc6803` | 警告 |
@@ -45,7 +45,7 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--shadow-1` | `0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)` | 卡片（轻） |
 | `--shadow-2` | `0 12px 32px rgba(16,24,40,.12)` | 抽屉 / toast（浮层） |
 
-浅色侧栏上的文字用 `--text-on-sidebar`，不要用 `--text-1`（否则深字叠深底）。
+浅色侧栏是白底深字：文字走 `--text-on-sidebar` / `--text-on-sidebar-strong`，不要用 `--text-on-primary` 写菜单。侧栏与内容区用右侧 `inset` `--border` 分界，不要再画深墨墙。登录左栏同样走 `--bg-sidebar`，标题用 `--text-on-sidebar-strong`。
 
 ## 深色
 
@@ -136,7 +136,7 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 - **卡片**：`--shadow-1` + `--radius`，**不要再套一圈边框**。悬停可微抬升（`--shadow-2` 或 `translateY(-1px)`），不要放大。
 - **表格**：表头**无底色**，只用 `--border-strong` 下边线 + `--fs-micro` 字距；行之间 `--border` 细线，最后一行无线；行高 `--row-h`；禁止每个单元格四边框。
 - **列宽按语义分级**，禁止所有列一律 `max-width`：`table-layout: fixed`，除主体列（名称/标题）留 `width:auto` 吸收剩余宽度外，其余列定宽——短码/性别窄列、备注宽列。数值与编号列 `font-variant-numeric: tabular-nums`。列宽平均摊开 = 脸不合格。
-- **当前菜单**：左侧 `3px` `--sidebar-accent` 条 + `--bg-sidebar-active`，文字 `--text-on-sidebar-strong`，禁止整条实心主色填充。深底上用 `--sidebar-accent`（亮一档的同色系），**不要**直接搬内容区的 `--color-primary`，那个色在深墨底上会发暗发脏。
+- **当前菜单**：左侧 `3px` `--sidebar-accent` 条 + `--bg-sidebar-active`，文字 `--text-on-sidebar-strong`，禁止整条实心主色填充。浅色侧栏 `--sidebar-accent` 与主色同值；**深色**侧栏必须用亮一档 `#7d94f8`，不要把 `--color-primary` 直接铺到深底上（会发暗发脏）。
 - **菜单图标**：每个叶子菜单必配一个 `--ico` 尺寸的线性图标，页面内用内联 `<symbol>` 雪碧图 + `<use>` 复用，`stroke: currentColor` 跟随主题。禁止 emoji、禁止图标字体外链、禁止只有一半菜单有图标。
 - **侧栏收起态**：只留图标居中，标签换成悬停气泡（`--bg-card` + `--shadow-2`，`left:100%` 外挂）。收起时分组标题隐藏、改用一条细分割线，且分组一律展开——没有标题就没法再点开。气泡要能溢出侧栏，所以侧栏不能设 `overflow:hidden`，省略号交给菜单项内部的 `.label`。
 - **状态**：浅底胶囊（`--success-soft` 等）+ `--radius-pill`，禁止只改字色。

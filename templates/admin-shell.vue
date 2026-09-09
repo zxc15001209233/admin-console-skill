@@ -103,6 +103,7 @@ if (saved === 'light' || saved === 'dark') {
 .admin-shell__aside {
   background: var(--bg-sidebar);
   color: var(--text-on-sidebar);
+  box-shadow: inset -1px 0 0 var(--border);
 }
 
 .admin-shell__brand {

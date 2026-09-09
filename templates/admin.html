@@ -7,15 +7,15 @@
 <style>
   /* 色值：themes.md token 表。组件样式里禁止再出现裸色。 */
   html[data-theme="light"] {
-    --bg-page:#f0f2f5; --bg-sidebar:#171b26; --bg-topbar:#ffffff; --bg-card:#ffffff;
+    --bg-page:#f0f2f5; --bg-sidebar:#ffffff; --bg-topbar:#ffffff; --bg-card:#ffffff;
     --bg-input:#ffffff; --bg-muted:#f7f8fa; --bg-hover:#f6f7f9;
     --bg-overlay:rgba(15,20,25,.45);
     --color-primary:#3b5bdb; --color-primary-hover:#324db8; --color-primary-active:#2b429c;
     --color-primary-soft:#eef1fc; --ring:rgba(59,91,219,.18);
     --border:#e8eaef; --border-strong:#d8dce4;
     --text-1:#1a1d24; --text-2:#5c6570; --text-3:#8b939e;
-    --text-on-sidebar:rgba(226,232,246,.70); --text-on-sidebar-strong:#eef1fb; --text-on-primary:#ffffff;
-    --bg-sidebar-hover:rgba(255,255,255,.06); --bg-sidebar-active:rgba(125,148,248,.16); --sidebar-accent:#7d94f8;
+    --text-on-sidebar:#5c6570; --text-on-sidebar-strong:#1a1d24; --text-on-primary:#ffffff;
+    --bg-sidebar-hover:#f6f7f9; --bg-sidebar-active:#eef1fc; --sidebar-accent:#3b5bdb;
     --danger:#d92d20; --success:#079455; --warning:#dc6803;
     --success-soft:#edfaf3; --warning-soft:#fff6ed; --muted-soft:#f2f4f7;
     --shadow-1:0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
@@ -56,6 +56,7 @@
   .sidebar {
     width:var(--sidebar-w); background:var(--bg-sidebar); color:var(--text-on-sidebar);
     padding:var(--sp-4) 0; flex-shrink:0; overflow:visible; z-index:2;
+    box-shadow:inset -1px 0 0 var(--border);
     transition:width var(--dur-panel) var(--ease);
   }
   .sidebar.collapsed { width:var(--sidebar-w-collapsed); }
@@ -87,7 +88,7 @@
   .nav-group.collapsed .nav-group-hd .chevron { transform:rotate(-90deg); }
   .nav-group.collapsed .nav-group-bd { display:none; }
   .sidebar.collapsed .nav-group-hd { display:none; }
-  .sidebar.collapsed .nav-group { margin:var(--sp-2) 0; padding-top:var(--sp-2); border-top:1px solid var(--bg-sidebar-hover); }
+  .sidebar.collapsed .nav-group { margin:var(--sp-2) 0; padding-top:var(--sp-2); border-top:1px solid var(--border); }
   .sidebar.collapsed .nav-group.collapsed .nav-group-bd { display:block; }
   .nav-ico {
     width:var(--ico); height:var(--ico); flex-shrink:0;
@@ -285,8 +286,9 @@
     width:40%; min-width:280px; padding:calc(var(--sp-6) * 2);
     display:flex; flex-direction:column; justify-content:center;
     background:var(--bg-sidebar); color:var(--text-on-sidebar);
+    box-shadow:inset -1px 0 0 var(--border);
   }
-  .login-brand h1 { margin:var(--sp-4) 0 var(--sp-2); font-size:var(--fs-brand); color:var(--text-on-primary); }
+  .login-brand h1 { margin:var(--sp-4) 0 var(--sp-2); font-size:var(--fs-brand); color:var(--text-on-sidebar-strong); }
   .login-brand p { margin:0; color:var(--text-3); }
   .login-main { flex:1; display:flex; align-items:center; justify-content:center; padding:var(--sp-6); }
   .login-card { width:360px; padding:var(--sp-6); background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-1); }

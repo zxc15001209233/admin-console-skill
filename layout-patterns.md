@@ -27,7 +27,7 @@
 
 抽屉打开用 `transform: translateX()` 滑入，时长 `--dur-panel`，曲线 `--ease`。禁止 `transform: scale`（大屏画布做法）。
 
-深色下侧栏底 `--bg-sidebar` 比页面底 `--bg-page` 浅一档，保住壳的层次。
+浅色侧栏白底，与内容区靠右侧 `inset` `--border` 分界。深色下侧栏底 `--bg-sidebar` 比页面底 `--bg-page` 浅一档，保住壳的层次。
 
 ## Hash 路由
 - 登录页：`#/login`（仅需求有登录）
