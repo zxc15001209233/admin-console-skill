@@ -5,102 +5,324 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>会议室预约</title>
 <style>
+  /* 色值：themes.md token 表。组件样式里禁止再出现裸色。 */
   html[data-theme="light"] {
-    --bg-page:#f4f6f8; --bg-sidebar:#1c2430; --bg-topbar:#fff; --bg-card:#fff;
-    --bg-input:#fff; --bg-overlay:rgba(15,20,25,.45); --color-primary:#2f6fed;
-    --border:#e5e9ef; --text-1:#1a1d24; --text-2:#5c6570; --text-3:#8b939e;
-    --text-on-sidebar:rgba(255,255,255,.85); --text-on-primary:#ffffff; --bg-sidebar-hover:rgba(255,255,255,.08);
+    --bg-page:#f0f2f5; --bg-sidebar:#171b26; --bg-topbar:#ffffff; --bg-card:#ffffff;
+    --bg-input:#ffffff; --bg-muted:#f7f8fa; --bg-hover:#f6f7f9;
+    --bg-overlay:rgba(15,20,25,.45);
+    --color-primary:#3b5bdb; --color-primary-hover:#324db8; --color-primary-active:#2b429c;
+    --color-primary-soft:#eef1fc; --ring:rgba(59,91,219,.18);
+    --border:#e8eaef; --border-strong:#d8dce4;
+    --text-1:#1a1d24; --text-2:#5c6570; --text-3:#8b939e;
+    --text-on-sidebar:rgba(226,232,246,.70); --text-on-sidebar-strong:#eef1fb; --text-on-primary:#ffffff;
+    --bg-sidebar-hover:rgba(255,255,255,.06); --bg-sidebar-active:rgba(125,148,248,.16); --sidebar-accent:#7d94f8;
     --danger:#d92d20; --success:#079455; --warning:#dc6803;
+    --success-soft:#edfaf3; --warning-soft:#fff6ed; --muted-soft:#f2f4f7;
+    --shadow-1:0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
+    --shadow-2:0 12px 32px rgba(16,24,40,.12);
   }
   html[data-theme="dark"] {
-    --bg-page:#0f1419; --bg-sidebar:#0b0e13; --bg-topbar:#161b22; --bg-card:#161b22;
-    --bg-input:#12171d; --bg-overlay:rgba(0,0,0,.55); --color-primary:#4c8dff;
-    --border:#2a3340; --text-1:#e8edf4; --text-2:#9aa8b5; --text-3:#6b7785;
-    --text-on-sidebar:rgba(232,237,244,.9); --text-on-primary:#ffffff; --bg-sidebar-hover:rgba(255,255,255,.08);
+    --bg-page:#0d1117; --bg-sidebar:#141926; --bg-topbar:#171d26; --bg-card:#171d26;
+    --bg-input:#11161d; --bg-muted:#1e242e; --bg-hover:#1c222b;
+    --bg-overlay:rgba(0,0,0,.55);
+    --color-primary:#5c7cfa; --color-primary-hover:#7189fb; --color-primary-active:#4c6ef5;
+    --color-primary-soft:rgba(92,124,250,.14); --ring:rgba(92,124,250,.28);
+    --border:#262d38; --border-strong:#333c4a;
+    --text-1:#e8edf4; --text-2:#9aa8b5; --text-3:#6b7785;
+    --text-on-sidebar:rgba(232,237,244,.72); --text-on-sidebar-strong:#eef1fb; --text-on-primary:#ffffff;
+    --bg-sidebar-hover:rgba(255,255,255,.06); --bg-sidebar-active:rgba(125,148,248,.16); --sidebar-accent:#7d94f8;
     --danger:#f97066; --success:#3ccb7f; --warning:#f7b267;
+    --success-soft:rgba(60,203,127,.16); --warning-soft:rgba(247,178,103,.16); --muted-soft:rgba(107,119,133,.22);
+    --shadow-1:0 1px 2px rgba(0,0,0,.28);
+    --shadow-2:0 12px 32px rgba(0,0,0,.36);
   }
-  * { box-sizing: border-box; }
-  body { margin:0; font:14px/1.5 "PingFang SC","Microsoft YaHei",sans-serif; background:var(--bg-page); color:var(--text-1); }
+  :root {
+    --radius:8px; --radius-sm:6px; --radius-pill:999px;
+    --dur:.15s; --dur-panel:.28s; --ease:cubic-bezier(.32,.72,0,1);
+    --fs-num:24px; --fs-brand:20px; --fs-title:16px; --fs-body:13px; --fs-label:12px; --fs-micro:11px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
+    --ico:18px; --ctl-h:32px; --row-h:44px;
+    --sidebar-w:232px; --sidebar-w-collapsed:64px; --topbar-h:56px; --drawer-w:480px; --tree-w:240px;
+  }
+
+  * { box-sizing:border-box; }
+  body {
+    margin:0; font:var(--fs-body)/1.5 "PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg-page); color:var(--text-1);
+  }
+  :focus-visible { outline:none; box-shadow:0 0 0 3px var(--ring); border-radius:var(--radius-sm); }
   .app { display:flex; min-height:100vh; }
-  .sidebar { width:232px; background:var(--bg-sidebar); color:var(--text-on-sidebar); padding:16px 0; flex-shrink:0; transition:width .2s; overflow:hidden; }
-  .sidebar.collapsed { width:64px; }
-  .sidebar-head { display:flex; align-items:center; justify-content:space-between; padding:0 12px 16px; gap:4px; }
-  .sidebar-brand { padding:0 4px; font-weight:600; font-size:16px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .sidebar.collapsed .sidebar-brand { opacity:0; width:0; padding:0; }
-  .sidebar-toggle { flex-shrink:0; width:28px; height:28px; border:0; border-radius:4px; background:transparent; color:var(--text-on-sidebar); cursor:pointer; font:inherit; }
-  .sidebar-toggle:hover { background:var(--bg-sidebar-hover); }
-  .nav-group { margin-bottom:4px; }
-  .nav-group-hd { display:flex; align-items:center; justify-content:space-between; width:100%; padding:8px 16px; border:0; background:transparent; color:var(--text-on-sidebar); font:inherit; cursor:pointer; text-align:left; }
-  .nav-group-hd:hover { background:var(--bg-sidebar-hover); }
-  .nav-group-hd .chevron { transition:transform .2s; }
+
+  .sidebar {
+    width:var(--sidebar-w); background:var(--bg-sidebar); color:var(--text-on-sidebar);
+    padding:var(--sp-4) 0; flex-shrink:0; overflow:visible; z-index:2;
+    transition:width var(--dur-panel) var(--ease);
+  }
+  .sidebar.collapsed { width:var(--sidebar-w-collapsed); }
+  .sidebar-head { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-2); padding:0 var(--sp-3) var(--sp-5); }
+  .sidebar-brand { display:flex; align-items:center; gap:var(--sp-2); min-width:0; }
+  .brand-mark {
+    width:var(--ctl-h); height:var(--ctl-h); flex-shrink:0; border-radius:var(--radius);
+    background:var(--sidebar-accent); color:var(--text-on-primary);
+    display:flex; align-items:center; justify-content:center;
+    font-size:var(--fs-body); font-weight:600;
+  }
+  .brand-text { font-size:var(--fs-title); font-weight:600; color:var(--text-on-sidebar-strong); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sidebar.collapsed .brand-text { display:none; }
+  .sidebar.collapsed .sidebar-head { flex-direction:column; justify-content:center; padding:0 0 var(--sp-3); }
+  .sidebar-toggle {
+    flex-shrink:0; width:28px; height:28px; border:0; border-radius:var(--radius-sm);
+    background:transparent; color:var(--text-3); cursor:pointer; font:inherit;
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .sidebar-toggle:hover { background:var(--bg-sidebar-hover); color:var(--text-on-sidebar-strong); }
+  .nav-group { margin-bottom:var(--sp-1); }
+  .nav-group-hd {
+    display:flex; align-items:center; justify-content:space-between; width:100%;
+    padding:var(--sp-2) var(--sp-4); border:0; background:transparent;
+    color:var(--text-3); font-size:var(--fs-micro); font-weight:500; letter-spacing:.06em;
+    cursor:pointer; text-align:left;
+  }
+  .nav-group-hd .chevron { transition:transform var(--dur) var(--ease); }
   .nav-group.collapsed .nav-group-hd .chevron { transform:rotate(-90deg); }
   .nav-group.collapsed .nav-group-bd { display:none; }
-  .sidebar.collapsed .nav-group-hd { justify-content:center; padding:8px 0; }
-  .sidebar.collapsed .nav-group-hd span.label,
-  .sidebar.collapsed .nav-group-hd .chevron { display:none; }
-  .sidebar a { display:block; padding:10px 16px; color:var(--text-on-sidebar); text-decoration:none; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .sidebar a:hover { background:var(--bg-sidebar-hover); }
-  .sidebar a.active { background:rgba(255,255,255,.12); }
-  .sidebar.collapsed a { padding:10px; text-align:center; font-size:12px; }
-  .main { flex:1; display:flex; flex-direction:column; min-width:0; }
-  .topbar { height:56px; background:var(--bg-topbar); border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:12px; padding:0 16px; }
-  .breadcrumb { color:var(--text-2); font-size:13px; }
-  .breadcrumb strong { color:var(--text-1); font-weight:500; }
-  .topbar-actions { display:flex; align-items:center; gap:12px; }
-  .topbar select, .topbar button { font:inherit; padding:6px 10px; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text-1); }
-  .user-area { display:flex; align-items:center; gap:8px; color:var(--text-2); font-size:13px; }
-  .user-avatar { width:28px; height:28px; border-radius:50%; background:var(--color-primary); color:var(--text-on-primary); display:flex; align-items:center; justify-content:center; font-size:12px; }
-  .content { padding:20px 24px; flex:1; }
-  .page-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-  .page-head h1 { margin:0; font-size:20px; }
-  .filter-bar { display:flex; gap:8px; align-items:center; margin-bottom:16px; flex-wrap:wrap; }
-  .filter-bar input { padding:6px 10px; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text-1); }
-  .filter-bar label { color:var(--text-2); }
-  table { width:100%; border-collapse:collapse; background:var(--bg-card); }
-  th,td { border:1px solid var(--border); padding:8px 10px; text-align:left; }
-  th { color:var(--text-2); font-weight:500; }
-  .empty { text-align:center; padding:32px; color:var(--text-3); background:var(--bg-card); border:1px solid var(--border); }
-  .pager { margin-top:12px; color:var(--text-2); font-size:13px; }
-  .drawer-mask { display:none; position:fixed; inset:0; background:var(--bg-overlay); z-index:100; }
-  .drawer-mask.open { display:block; }
-  .drawer { position:fixed; top:0; right:0; width:400px; height:100%; background:var(--bg-card); color:var(--text-1); padding:16px; z-index:101; display:flex; flex-direction:column; }
-  .drawer h2 { margin:0 0 16px; font-size:18px; }
-  .drawer label { display:block; margin-bottom:12px; color:var(--text-2); }
-  .drawer input { width:100%; margin-top:4px; padding:6px 10px; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text-1); }
-  .drawer-actions { margin-top:auto; display:flex; gap:8px; justify-content:flex-end; }
-  .toast { position:fixed; right:16px; top:72px; background:var(--bg-card); border:1px solid var(--border); padding:8px 12px; display:none; z-index:200; color:var(--text-1); border-radius:4px; }
+  .sidebar.collapsed .nav-group-hd { display:none; }
+  .sidebar.collapsed .nav-group { margin:var(--sp-2) 0; padding-top:var(--sp-2); border-top:1px solid var(--bg-sidebar-hover); }
+  .sidebar.collapsed .nav-group.collapsed .nav-group-bd { display:block; }
+  .nav-ico {
+    width:var(--ico); height:var(--ico); flex-shrink:0;
+    fill:none; stroke:currentColor; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round;
+  }
+  .sidebar a {
+    display:flex; align-items:center; gap:var(--sp-2); position:relative;
+    margin:2px var(--sp-2); padding:var(--sp-2) var(--sp-3);
+    color:var(--text-on-sidebar); text-decoration:none; border-radius:var(--radius-sm);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .sidebar a .nav-label { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sidebar a:hover { background:var(--bg-sidebar-hover); color:var(--text-on-sidebar-strong); }
+  .sidebar a.active { background:var(--bg-sidebar-active); color:var(--text-on-sidebar-strong); font-weight:500; }
+  .sidebar a.active::before {
+    content:""; position:absolute; left:0; top:var(--sp-2); bottom:var(--sp-2);
+    width:3px; border-radius:var(--radius-pill); background:var(--sidebar-accent);
+  }
+  .sidebar.collapsed a { justify-content:center; padding:var(--sp-2) 0; margin:2px var(--sp-2); }
+  .sidebar.collapsed a .nav-label {
+    position:absolute; left:100%; top:50%; transform:translateY(-50%);
+    margin-left:var(--sp-2); padding:var(--sp-1) var(--sp-3);
+    background:var(--bg-card); color:var(--text-1); box-shadow:var(--shadow-2);
+    border-radius:var(--radius-sm); font-size:var(--fs-label); font-weight:500;
+    opacity:0; pointer-events:none; white-space:nowrap; overflow:visible;
+    transition:opacity var(--dur) var(--ease); z-index:5;
+  }
+  .sidebar.collapsed a:hover .nav-label,
+  .sidebar.collapsed a:focus-visible .nav-label { opacity:1; }
+
+  /* 顶栏 */
+  .main { flex:1; display:flex; flex-direction:column; min-width:0; position:relative; z-index:1; }
+  .topbar {
+    height:var(--topbar-h); flex-shrink:0; background:var(--bg-topbar);
+    display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3);
+    padding:0 var(--sp-6); box-shadow:inset 0 -1px 0 var(--border);
+  }
+  .breadcrumb { color:var(--text-2); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .breadcrumb strong { color:var(--text-1); font-weight:600; }
+  .topbar-actions { display:flex; align-items:center; gap:var(--sp-3); flex-shrink:0; }
+  .theme-seg { display:flex; gap:2px; padding:2px; background:var(--bg-muted); border-radius:var(--radius); }
+  .theme-seg button {
+    border:0; background:transparent; color:var(--text-2); cursor:pointer; font:inherit;
+    padding:var(--sp-1) var(--sp-3); border-radius:var(--radius-sm);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .theme-seg button:hover { color:var(--text-1); }
+  .theme-seg button.active { background:var(--bg-card); color:var(--text-1); box-shadow:var(--shadow-1); }
+  .user-area { display:flex; align-items:center; gap:var(--sp-2); color:var(--text-2); }
+  .user-avatar {
+    width:28px; height:28px; border-radius:50%;
+    background:var(--color-primary-soft); color:var(--color-primary);
+    display:flex; align-items:center; justify-content:center;
+    font-size:var(--fs-label); font-weight:600;
+  }
+
+  /* 控件 */
+  input, select, button { font:inherit; }
+  .field {
+    height:var(--ctl-h); padding:0 var(--sp-3);
+    border:1px solid var(--border); border-radius:var(--radius);
+    background:var(--bg-input); color:var(--text-1);
+    transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .field:hover { border-color:var(--border-strong); }
+  .field:focus { outline:none; border-color:var(--color-primary); box-shadow:0 0 0 3px var(--ring); }
+  button { cursor:pointer; }
+  .btn {
+    height:var(--ctl-h); padding:0 var(--sp-4); border:0; border-radius:var(--radius);
+    font-weight:500; transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .btn.primary { background:var(--color-primary); color:var(--text-on-primary); }
+  .btn.primary:hover { background:var(--color-primary-hover); }
+  .btn.primary:active { background:var(--color-primary-active); }
+  .btn.ghost { background:var(--bg-muted); color:var(--text-1); }
+  .btn.ghost:hover { background:var(--bg-hover); }
+  .btn.ghost:disabled { color:var(--text-3); cursor:not-allowed; }
+  .btn-link {
+    border:0; background:transparent; color:var(--color-primary);
+    padding:var(--sp-1) var(--sp-1); border-radius:var(--radius-sm);
+    transition:color var(--dur) var(--ease);
+  }
+  .btn-link:hover { color:var(--color-primary-hover); text-decoration:underline; }
+  .btn-link.danger { color:var(--danger); }
+
+  /* 内容区 */
+  .content { flex:1; overflow:auto; padding:var(--sp-5) var(--sp-6); }
+  .page-head { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); margin-bottom:var(--sp-4); }
+  .page-head h1 { margin:0; font-size:var(--fs-title); font-weight:600; }
+  .page-head .actions { display:flex; gap:var(--sp-2); }
+  .card { background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-1); }
+
+  /* 筛选条 */
+  .filter-bar {
+    display:flex; flex-wrap:wrap; align-items:center; gap:var(--sp-2);
+    padding:var(--sp-3) var(--sp-4); margin-bottom:var(--sp-3);
+    background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-1);
+  }
+  .filter-bar label { display:inline-flex; align-items:center; gap:var(--sp-2); color:var(--text-2); }
+
+  /* 表格 */
+  .table-wrap { overflow:auto; background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-1); }
+  table { width:100%; border-collapse:collapse; table-layout:fixed; }
+  th {
+    padding:var(--sp-3) var(--sp-4); text-align:left;
+    color:var(--text-3); font-size:var(--fs-micro); font-weight:500; letter-spacing:.06em;
+    white-space:nowrap; border-bottom:1px solid var(--border-strong);
+  }
+  td {
+    height:var(--row-h); padding:0 var(--sp-4); text-align:left;
+    border-bottom:1px solid var(--border); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  tbody tr { transition:background var(--dur) var(--ease); }
+  tbody tr:hover { background:var(--bg-hover); }
+  tbody tr:last-child td { border-bottom:0; }
+  /* 列宽按语义分级，禁止所有列一律同一个 max-width */
+  .c-code { width:120px; font-variant-numeric:tabular-nums; }
+  .c-narrow { width:88px; }
+  /* 主体列：吸收表格剩余宽度，其余列保持定宽 */
+  .c-mid { width:auto; }
+  .c-wide { max-width:260px; }
+  .c-num { width:96px; text-align:right; font-variant-numeric:tabular-nums; }
+  .c-ops { width:150px; white-space:nowrap; }
+
+  /* 状态胶囊 */
+  .pill { display:inline-block; padding:2px var(--sp-2); border-radius:var(--radius-pill); font-size:var(--fs-label); }
+  .pill.ok { background:var(--success-soft); color:var(--success); }
+  .pill.warn { background:var(--warning-soft); color:var(--warning); }
+  .pill.muted { background:var(--muted-soft); color:var(--text-2); }
+
+  /* 空态 */
+  .empty {
+    padding:calc(var(--sp-6) * 2) var(--sp-6); text-align:center;
+    background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-1);
+  }
+  .empty h3 { margin:0 0 var(--sp-2); font-size:var(--fs-title); font-weight:600; color:var(--text-1); }
+  .empty p { margin:0 0 var(--sp-4); color:var(--text-3); }
+
+  /* 分页 */
+  .pager { display:flex; align-items:center; gap:var(--sp-2); flex-wrap:wrap; margin-top:var(--sp-3); color:var(--text-3); font-size:var(--fs-label); }
+  .pager .total { margin-right:auto; }
+  .pager .page-btn {
+    min-width:28px; height:28px; padding:0 var(--sp-2); border:0; border-radius:var(--radius-sm);
+    background:transparent; color:var(--text-2); font-size:var(--fs-label);
+    transition:background var(--dur) var(--ease), color var(--dur) var(--ease);
+  }
+  .pager .page-btn:hover:not(:disabled) { background:var(--bg-hover); color:var(--text-1); }
+  .pager .page-btn:disabled { color:var(--text-3); cursor:not-allowed; }
+  .pager .page-btn.active { background:var(--color-primary-soft); color:var(--color-primary); font-weight:600; }
+
+  /* 抽屉 */
+  .drawer-mask {
+    position:fixed; inset:0; z-index:100; background:var(--bg-overlay);
+    opacity:0; visibility:hidden; transition:opacity var(--dur-panel) var(--ease), visibility var(--dur-panel) var(--ease);
+  }
+  .drawer-mask.open { opacity:1; visibility:visible; }
+  .drawer {
+    position:fixed; top:0; right:0; z-index:101; width:var(--drawer-w); height:100%;
+    display:flex; flex-direction:column;
+    background:var(--bg-card); color:var(--text-1); box-shadow:var(--shadow-2);
+    transform:translateX(100%); transition:transform var(--dur-panel) var(--ease);
+  }
+  .drawer-mask.open .drawer { transform:translateX(0); }
+  .drawer h2 {
+    flex-shrink:0; margin:0; padding:var(--sp-4) var(--sp-6);
+    font-size:var(--fs-title); font-weight:600; border-bottom:1px solid var(--border);
+  }
+  .drawer form { display:flex; flex-direction:column; flex:1; min-height:0; }
+  .drawer-body { flex:1; overflow:auto; padding:var(--sp-5) var(--sp-6); }
+  .drawer label { display:block; margin-bottom:var(--sp-4); color:var(--text-2); }
+  .drawer .field { display:block; width:100%; margin-top:var(--sp-1); }
+  .drawer-actions {
+    flex-shrink:0; display:flex; gap:var(--sp-2); justify-content:flex-end; align-items:center;
+    padding:var(--sp-3) var(--sp-6); border-top:1px solid var(--border);
+  }
+  .drawer-actions .grow { margin-right:auto; }
+  .desc-list { background:var(--bg-card); overflow:hidden; }
+  .desc-row { display:flex; border-bottom:1px solid var(--border); }
+  .desc-row:last-child { border-bottom:0; }
+  .desc-row .k { flex-shrink:0; width:140px; padding:var(--sp-3) var(--sp-4); color:var(--text-2); background:var(--bg-muted); }
+  .desc-row .v { min-width:0; padding:var(--sp-3) var(--sp-4); word-break:break-all; }
+  .drawer .desc-list { box-shadow:none; }
+
+  /* toast */
+  .toast {
+    position:fixed; right:var(--sp-6); top:calc(var(--topbar-h) + var(--sp-4)); z-index:200; display:none;
+    padding:var(--sp-3) var(--sp-4); background:var(--bg-card); color:var(--text-1);
+    border-radius:var(--radius); box-shadow:var(--shadow-2);
+  }
   .toast.show { display:block; }
-  button { cursor:pointer; font:inherit; }
-  button.primary { background:var(--color-primary); color:var(--text-on-primary); border:0; padding:6px 12px; border-radius:4px; }
-  button.ghost { background:transparent; border:1px solid var(--border); color:var(--text-1); padding:6px 12px; border-radius:4px; }
-  button.danger { background:transparent; border:1px solid var(--danger); color:var(--danger); padding:4px 10px; border-radius:4px; }
-  .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--bg-page); }
-  .login-card { width:360px; padding:32px; background:var(--bg-card); border:1px solid var(--border); border-radius:8px; }
-  .login-card h1 { margin:0 0 24px; font-size:20px; text-align:center; }
-  .login-card label { display:block; margin-bottom:12px; color:var(--text-2); }
-  .login-card input { width:100%; margin-top:4px; padding:8px 10px; border:1px solid var(--border); border-radius:4px; background:var(--bg-input); color:var(--text-1); }
-  .login-card button { width:100%; margin-top:16px; }
+
+  /* 登录 */
+  .login-wrap { display:flex; min-height:100vh; background:var(--bg-page); }
+  .login-brand {
+    width:40%; min-width:280px; padding:calc(var(--sp-6) * 2);
+    display:flex; flex-direction:column; justify-content:center;
+    background:var(--bg-sidebar); color:var(--text-on-sidebar);
+  }
+  .login-brand h1 { margin:var(--sp-4) 0 var(--sp-2); font-size:var(--fs-brand); color:var(--text-on-primary); }
+  .login-brand p { margin:0; color:var(--text-3); }
+  .login-main { flex:1; display:flex; align-items:center; justify-content:center; padding:var(--sp-6); }
+  .login-card { width:360px; padding:var(--sp-6); background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-1); }
+  .login-card h2 { margin:0 0 var(--sp-5); font-size:var(--fs-title); font-weight:600; }
+  .login-card label { display:block; margin-bottom:var(--sp-4); color:var(--text-2); }
+  .login-card .field { display:block; width:100%; margin-top:var(--sp-1); }
+  .login-card .btn { width:100%; margin-top:var(--sp-2); }
+
   [data-role="staff"] .role-admin-only { display:none !important; }
   .hidden { display:none !important; }
 </style>
 </head>
 <body data-role="staff">
+<svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden">
+  <symbol id="ico-room" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="3" width="16" height="18" rx="1.5"/><path d="M9 21V12h6v9"/><path d="M9 7h.01"/></symbol>
+  <symbol id="ico-screen" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M8 20h8M12 16v4"/></symbol>
+</svg>
 <div class="app" id="shell">
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-head">
-      <div class="sidebar-brand">会议室预约</div>
+      <div class="sidebar-brand">
+        <span class="brand-mark">会</span>
+        <span class="brand-text">会议室预约</span>
+      </div>
       <button type="button" class="sidebar-toggle" id="sidebarToggle" title="收起侧栏">☰</button>
     </div>
     <div class="nav-group" id="navBiz">
       <button type="button" class="nav-group-hd" id="navBizToggle"><span class="label">业务管理</span><span class="chevron">▾</span></button>
       <div class="nav-group-bd">
-        <a href="#/rooms" data-route="rooms">会议室一览</a>
+        <a href="#/rooms" data-route="rooms"><svg class="nav-ico" aria-hidden="true"><use href="#ico-room"/></svg><span class="nav-label">会议室一览</span></a>
       </div>
     </div>
     <div class="nav-group" id="navScreen">
       <button type="button" class="nav-group-hd" id="navScreenToggle"><span class="label">数据大屏</span><span class="chevron">▾</span></button>
       <div class="nav-group-bd">
-        <a href="screen.html">工业分析大屏</a>
+        <a href="screen.html"><svg class="nav-ico" aria-hidden="true"><use href="#ico-screen"/></svg><span class="nav-label">工业分析大屏</span></a>
       </div>
     </div>
   </aside>
@@ -108,8 +330,11 @@
     <header class="topbar">
       <nav class="breadcrumb" id="breadcrumb">会议室预约 / <strong>会议室一览</strong></nav>
       <div class="topbar-actions">
-        <button type="button" id="themeBtn">切换主题</button>
-        <select id="roleSel">
+        <div class="theme-seg" id="themeSeg">
+          <button type="button" data-theme-set="light" class="active">浅</button>
+          <button type="button" data-theme-set="dark">深</button>
+        </div>
+        <select id="roleSel" class="field" title="演示角色">
           <option value="staff">员工</option>
           <option value="admin">管理员</option>
         </select>
@@ -124,14 +349,22 @@
 </div>
 <div class="drawer-mask" id="drawer">
   <div class="drawer">
-    <h2>新建会议室</h2>
+    <h2 id="drawerTitle">新建会议室</h2>
+    <div id="drawerView" class="drawer-body hidden"></div>
+    <div id="drawerViewActions" class="drawer-actions hidden">
+      <button type="button" class="btn-link danger role-admin-only grow" id="viewDel">删除</button>
+      <button type="button" class="btn ghost" id="viewClose">关闭</button>
+      <button type="button" class="btn primary" id="viewEdit">编辑</button>
+    </div>
     <form id="roomForm">
-      <label>名称 *<input type="text" name="name" required placeholder="会议室名称" /></label>
-      <label>楼层 *<input type="text" name="floor" required placeholder="如 3F" /></label>
-      <label>容量 *<input type="number" name="capacity" required min="1" placeholder="人数" /></label>
+      <div class="drawer-body">
+        <label>名称 *<input type="text" class="field" name="name" required placeholder="会议室名称" /></label>
+        <label>楼层 *<input type="text" class="field" name="floor" required placeholder="如 3F" /></label>
+        <label>容量 *<input type="number" class="field" name="capacity" required min="1" placeholder="人数" /></label>
+      </div>
       <div class="drawer-actions">
-        <button type="button" class="ghost" id="drawerCancel">取消</button>
-        <button type="submit" class="primary">提交</button>
+        <button type="button" class="btn ghost" id="drawerCancel">取消</button>
+        <button type="submit" class="btn primary">提交</button>
       </div>
     </form>
   </div>
@@ -140,26 +373,34 @@
 <script>
 const USE_MOCK = true;
 const THEME_KEY = 'admin-theme:会议室预约';
-const AUTH_KEY = 'adminAuthed';
+const AUTH_KEY = 'admin-auth:会议室预约';
+const PAGE_SIZE = 10;
+
 const MOCK = { rooms: [
   { id: 1, name: '一号会议室', floor: '3F', capacity: 8 },
   { id: 2, name: '董事会会议室', floor: '5F', capacity: 20 }
 ]};
 
 let filterName = '';
+let page = 1;
 let pendingHash = '';
 let nextId = 3;
+let editingId = null;
+let drawerMode = 'form';
 
 const $ = (sel) => document.querySelector(sel);
 const shell = $('#shell');
 const view = $('#view');
 const drawer = $('#drawer');
 const toast = $('#toast');
-const themeBtn = $('#themeBtn');
 const roleSel = $('#roleSel');
 const roomForm = $('#roomForm');
 const sidebar = $('#sidebar');
 const breadcrumb = $('#breadcrumb');
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
 
 function isAuthed() {
   return sessionStorage.getItem(AUTH_KEY) === '1';
@@ -175,32 +416,21 @@ function showToast(msg) {
 function applyTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(THEME_KEY, theme);
+  document.querySelectorAll('#themeSeg [data-theme-set]').forEach((btn) => {
+    btn.classList.toggle('active', btn.getAttribute('data-theme-set') === theme);
+  });
 }
 
 function loadTheme() {
-  const saved = localStorage.getItem(THEME_KEY);
-  applyTheme(saved === 'dark' ? 'dark' : 'light');
-}
-
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  applyTheme(cur === 'dark' ? 'light' : 'dark');
+  applyTheme(localStorage.getItem(THEME_KEY) === 'dark' ? 'dark' : 'light');
 }
 
 function applyRole(role) {
   document.body.setAttribute('data-role', role);
 }
 
-function toggleSidebar() {
-  sidebar.classList.toggle('collapsed');
-}
-
-function toggleNavGroup(group) {
-  group.classList.toggle('collapsed');
-}
-
 function setBreadcrumb(pageTitle) {
-  breadcrumb.innerHTML = '会议室预约 / <strong>' + pageTitle + '</strong>';
+  breadcrumb.innerHTML = '会议室预约 / <strong>' + esc(pageTitle) + '</strong>';
 }
 
 function setActiveNav(route) {
@@ -211,8 +441,7 @@ function setActiveNav(route) {
 
 function getRoute() {
   const h = location.hash || '#/rooms';
-  if (h.startsWith('#/')) return h.slice(2);
-  return 'rooms';
+  return h.startsWith('#/') ? h.slice(2) : 'rooms';
 }
 
 function navigate(hash) {
@@ -221,18 +450,88 @@ function navigate(hash) {
 }
 
 function filteredRooms() {
-  const kw = filterName.trim().toLowerCase();
-  if (!kw) return MOCK.rooms;
-  return MOCK.rooms.filter((r) => r.name.toLowerCase().includes(kw));
+  const kw = filterName.trim();
+  return kw ? MOCK.rooms.filter((r) => r.name.includes(kw)) : MOCK.rooms;
 }
 
-function openDrawer() {
-  roomForm.reset();
+function paginate(list, cur, size) {
+  const pages = Math.max(1, Math.ceil(list.length / size));
+  const p = Math.min(Math.max(1, cur), pages);
+  return { page: p, pages: pages, total: list.length, rows: list.slice((p - 1) * size, p * size) };
+}
+
+function pagerHtml(pg) {
+  let nums = '';
+  for (let i = 1; i <= pg.pages; i += 1) {
+    nums += '<button type="button" class="page-btn' + (i === pg.page ? ' active' : '') + '" data-page="' + i + '">' + i + '</button>';
+  }
+  return '<div class="pager"><span class="total">共 ' + pg.total + ' 条</span>'
+    + '<button type="button" class="page-btn" data-page="' + (pg.page - 1) + '"' + (pg.page <= 1 ? ' disabled' : '') + '>上一页</button>'
+    + nums
+    + '<button type="button" class="page-btn" data-page="' + (pg.page + 1) + '"' + (pg.page >= pg.pages ? ' disabled' : '') + '>下一页</button></div>';
+}
+
+function bindPager(root, rerender) {
+  root.querySelectorAll('.page-btn[data-page]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      if (btn.disabled) return;
+      page = Number(btn.getAttribute('data-page'));
+      rerender();
+    });
+  });
+}
+
+function setDrawerMode(mode) {
+  drawerMode = mode;
+  const isView = mode === 'view';
+  roomForm.classList.toggle('hidden', isView);
+  $('#drawerView').classList.toggle('hidden', !isView);
+  $('#drawerViewActions').classList.toggle('hidden', !isView);
+}
+
+function fillView(r) {
+  $('#drawerTitle').textContent = r.name;
+  $('#drawerView').innerHTML = '<div class="desc-list">'
+    + [['名称', r.name], ['楼层', r.floor], ['容量', r.capacity]].map(([k, v]) =>
+      '<div class="desc-row"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v) + '</div></div>').join('')
+    + '</div>';
+  $('#viewDel').setAttribute('data-del', String(r.id));
+}
+
+function fillForm(id) {
+  editingId = id || null;
+  $('#drawerTitle').textContent = id ? '编辑会议室' : '新建会议室';
+  if (id) {
+    const r = MOCK.rooms.find((x) => x.id === id);
+    if (!r) return false;
+    roomForm.elements.namedItem('name').value = r.name;
+    roomForm.elements.namedItem('floor').value = r.floor;
+    roomForm.elements.namedItem('capacity').value = String(r.capacity);
+  } else {
+    roomForm.reset();
+  }
+  return true;
+}
+
+function openDrawer(id, mode) {
+  const next = mode || 'form';
+  if (next === 'view') {
+    const r = MOCK.rooms.find((x) => x.id === id);
+    if (!r) return;
+    editingId = id;
+    fillView(r);
+    setDrawerMode('view');
+  } else {
+    if (!fillForm(id)) return;
+    setDrawerMode('form');
+  }
   drawer.classList.add('open');
 }
 
 function closeDrawer() {
   drawer.classList.remove('open');
+  editingId = null;
+  setDrawerMode('form');
 }
 
 function renderLogin() {
@@ -241,7 +540,11 @@ function renderLogin() {
   view.innerHTML = '';
   const wrap = document.createElement('div');
   wrap.className = 'login-wrap';
-  wrap.innerHTML = '<div class="login-card"><h1>登录</h1><form id="loginForm"><label>账号<input type="text" name="user" required placeholder="任意账号" /></label><label>密码<input type="password" name="pwd" required placeholder="任意密码" /></label><button type="submit" class="primary">登录</button></form></div>';
+  wrap.innerHTML = '<div class="login-brand"><div class="brand-mark">会</div><h1>会议室预约</h1><p>内部管理系统</p></div>'
+    + '<div class="login-main"><div class="login-card"><h2>登录</h2><form id="loginForm">'
+    + '<label>账号<input type="text" class="field" name="user" required placeholder="任意账号" /></label>'
+    + '<label>密码<input type="password" class="field" name="pwd" required placeholder="任意密码" /></label>'
+    + '<button type="submit" class="btn primary">登录</button></form></div></div>';
   document.body.insertBefore(wrap, shell);
   wrap.querySelector('#loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
@@ -258,30 +561,59 @@ function renderRooms() {
   document.querySelectorAll('.login-wrap').forEach((el) => el.remove());
   setBreadcrumb('会议室一览');
   setActiveNav('rooms');
-  const rows = filteredRooms();
-  const total = rows.length;
-  const tableRows = rows.length
-    ? rows.map((r) => '<tr><td>' + r.name + '</td><td>' + r.floor + '</td><td>' + r.capacity + '</td><td><button type="button" class="danger role-admin-only" data-del="' + r.id + '">删除</button></td></tr>').join('')
-    : '';
-  const emptyHtml = rows.length ? '' : '<div class="empty">' + (filterName.trim() ? '未找到匹配的会议室，请调整筛选条件' : '暂无会议室，点击新建添加') + '</div>';
-  view.innerHTML = '<div class="page-head"><h1>会议室一览</h1><button type="button" class="primary" id="btnNew">新建</button></div>'
-    + '<div class="filter-bar"><label>名称 <input type="text" id="filterName" value="' + filterName.replace(/"/g, '&quot;') + '" placeholder="关键字" /></label>'
-    + '<button type="button" class="primary" id="btnSearch">查询</button><button type="button" class="ghost" id="btnReset">重置</button></div>'
-    + (rows.length ? '<table><thead><tr><th>名称</th><th>楼层</th><th>容量</th><th>操作</th></tr></thead><tbody>' + tableRows + '</tbody></table>' : emptyHtml)
-    + '<div class="pager">共 ' + total + ' 条</div>';
+
+  const pg = paginate(filteredRooms(), page, PAGE_SIZE);
+  page = pg.page;
+
+  const body = pg.rows.length
+    ? '<div class="table-wrap"><table><thead><tr>'
+      + '<th class="c-mid">名称</th><th class="c-narrow">楼层</th><th class="c-num">容量</th><th class="c-ops">操作</th>'
+      + '</tr></thead><tbody>'
+      + pg.rows.map((r) => '<tr>'
+        + '<td class="c-mid">' + esc(r.name) + '</td>'
+        + '<td class="c-narrow">' + esc(r.floor) + '</td>'
+        + '<td class="c-num">' + esc(r.capacity) + '</td>'
+        + '<td class="c-ops">'
+        + '<button type="button" class="btn-link" data-view="' + r.id + '">查看</button>'
+        + '<button type="button" class="btn-link" data-edit="' + r.id + '">编辑</button>'
+        + '<button type="button" class="btn-link danger role-admin-only" data-del="' + r.id + '">删除</button></td>'
+        + '</tr>').join('')
+      + '</tbody></table></div>' + pagerHtml(pg)
+    : (filterName.trim()
+      ? '<div class="empty"><h3>没有匹配结果</h3><p>试着换个关键字，或重置筛选条件。</p><button type="button" class="btn ghost" id="btnReset2">重置筛选</button></div>'
+      : '<div class="empty"><h3>还没有会议室</h3><p>创建第一间会议室后，这里会显示它的楼层与容量。</p><button type="button" class="btn primary" id="btnNew2">新建会议室</button></div>');
+
+  view.innerHTML = '<div class="page-head"><h1>会议室一览</h1><div class="actions">'
+    + '<button type="button" class="btn primary" id="btnNew">新建</button></div></div>'
+    + '<div class="filter-bar"><label>名称 <input type="text" class="field" id="filterName" value="' + esc(filterName) + '" placeholder="关键字" /></label>'
+    + '<button type="button" class="btn primary" id="btnSearch">查询</button>'
+    + '<button type="button" class="btn ghost" id="btnReset">重置</button></div>'
+    + body;
 
   $('#btnNew').addEventListener('click', openDrawer);
+  const btnNew2 = $('#btnNew2');
+  if (btnNew2) btnNew2.addEventListener('click', openDrawer);
   $('#filterName').addEventListener('input', (e) => { filterName = e.target.value; });
-  $('#btnSearch').addEventListener('click', () => renderRooms());
-  $('#btnReset').addEventListener('click', () => { filterName = ''; renderRooms(); });
+  $('#btnSearch').addEventListener('click', () => { page = 1; renderRooms(); });
+  const doReset = () => { filterName = ''; page = 1; renderRooms(); };
+  $('#btnReset').addEventListener('click', doReset);
+  const btnReset2 = $('#btnReset2');
+  if (btnReset2) btnReset2.addEventListener('click', doReset);
+  bindPager(view, renderRooms);
+  view.querySelectorAll('[data-view]').forEach((btn) => {
+    btn.addEventListener('click', () => openDrawer(Number(btn.getAttribute('data-view')), 'view'));
+  });
+  view.querySelectorAll('[data-edit]').forEach((btn) => {
+    btn.addEventListener('click', () => openDrawer(Number(btn.getAttribute('data-edit')), 'form'));
+  });
+
   view.querySelectorAll('[data-del]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const id = Number(btn.getAttribute('data-del'));
       const room = MOCK.rooms.find((r) => r.id === id);
       if (!room) return;
       if (!confirm('确定删除「' + room.name + '」？')) return;
-      const idx = MOCK.rooms.findIndex((r) => r.id === id);
-      if (idx >= 0) MOCK.rooms.splice(idx, 1);
+      MOCK.rooms.splice(MOCK.rooms.findIndex((r) => r.id === id), 1);
       showToast('已删除');
       renderRooms();
     });
@@ -290,29 +622,38 @@ function renderRooms() {
 
 function route() {
   const r = getRoute();
-  if (r === 'login') {
-    renderLogin();
-    return;
-  }
+  if (r === 'login') { renderLogin(); return; }
   if (!isAuthed()) {
     pendingHash = location.hash || '#/rooms';
     if (location.hash !== '#/login') location.hash = '#/login';
     else renderLogin();
     return;
   }
-  if (r === 'rooms') {
-    renderRooms();
-    return;
-  }
+  if (r === 'rooms') { renderRooms(); return; }
   navigate('#/rooms');
 }
 
-themeBtn.addEventListener('click', toggleTheme);
+document.querySelectorAll('#themeSeg [data-theme-set]').forEach((btn) => {
+  btn.addEventListener('click', () => applyTheme(btn.getAttribute('data-theme-set')));
+});
 roleSel.addEventListener('change', () => applyRole(roleSel.value));
-$('#sidebarToggle').addEventListener('click', toggleSidebar);
-$('#navBizToggle').addEventListener('click', () => toggleNavGroup($('#navBiz')));
-$('#navScreenToggle').addEventListener('click', () => toggleNavGroup($('#navScreen')));
+$('#sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+$('#navBizToggle').addEventListener('click', () => $('#navBiz').classList.toggle('collapsed'));
+$('#navScreenToggle').addEventListener('click', () => $('#navScreen').classList.toggle('collapsed'));
 $('#drawerCancel').addEventListener('click', closeDrawer);
+$('#viewClose').addEventListener('click', closeDrawer);
+$('#viewEdit').addEventListener('click', () => { if (editingId) openDrawer(editingId, 'form'); });
+$('#viewDel').addEventListener('click', () => {
+  const id = Number($('#viewDel').getAttribute('data-del'));
+  const room = MOCK.rooms.find((r) => r.id === id);
+  if (!room) return;
+  if (!confirm('确定删除「' + room.name + '」？')) return;
+  MOCK.rooms.splice(MOCK.rooms.findIndex((r) => r.id === id), 1);
+  showToast('已删除');
+  closeDrawer();
+  renderRooms();
+});
+
 roomForm.addEventListener('submit', (e) => {
   e.preventDefault();
   const fd = new FormData(roomForm);
@@ -323,9 +664,18 @@ roomForm.addEventListener('submit', (e) => {
     showToast('请填写完整信息');
     return;
   }
-  MOCK.rooms.push({ id: nextId++, name, floor, capacity });
-  closeDrawer();
-  showToast('新建成功');
+  if (editingId) {
+    const room = MOCK.rooms.find((r) => r.id === editingId);
+    if (!room) return;
+    room.name = name; room.floor = floor; room.capacity = capacity;
+    closeDrawer();
+    showToast('保存成功');
+  } else {
+    MOCK.rooms.push({ id: nextId++, name: name, floor: floor, capacity: capacity });
+    page = 1;
+    closeDrawer();
+    showToast('新建成功');
+  }
   if (getRoute() === 'rooms') renderRooms();
 });
 

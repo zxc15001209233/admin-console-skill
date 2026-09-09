@@ -6,8 +6,12 @@
 <template>
   <el-config-provider :locale="zhCn">
     <el-container class="admin-shell">
+      <!-- 宽/高与 themes.md 的 --sidebar-w / --topbar-h 保持一致，改一处要同步改 token -->
       <el-aside width="232px" class="admin-shell__aside">
-        <div class="admin-shell__brand">{{ productName }}</div>
+        <div class="admin-shell__brand">
+          <span class="admin-shell__mark">{{ productName.slice(0, 1) }}</span>
+          <span>{{ productName }}</span>
+        </div>
         <nav class="admin-shell__nav">
           <!-- 菜单：业务页 router-link；大屏用 a[href=screen.html] 整页跳转，禁止 iframe -->
           <router-link
@@ -16,6 +20,7 @@
             :to="item.path"
             class="admin-shell__link"
           >
+            <!-- 叶子菜单必须带图标（拷贝后换成 el-icon）；收起态只留图标 + 悬停气泡 -->
             {{ item.label }}
           </router-link>
           <a
@@ -29,8 +34,11 @@
       </el-aside>
       <el-container>
         <el-header height="56px" class="admin-shell__header">
-          <!-- 主题切换：html data-theme；键 admin-theme:产品名 -->
-          <el-button text @click="toggleTheme">{{ themeLabel }}</el-button>
+          <!-- 主题：分段开关（禁止单个文字按钮）；html data-theme；键 admin-theme:产品名 -->
+          <el-radio-group :model-value="theme" size="small" @change="applyTheme">
+            <el-radio-button value="light">浅</el-radio-button>
+            <el-radio-button value="dark">深</el-radio-button>
+          </el-radio-group>
           <!-- 演示角色 el-select -->
           <el-select v-model="demoRole" size="small" style="width: 120px">
             <el-option label="员工" value="staff" />
@@ -66,16 +74,11 @@ watch(demoRole, (role) => {
 })
 
 const theme = ref<'light' | 'dark'>('light')
-const themeLabel = computed(() => (theme.value === 'light' ? '切换深色' : '切换浅色'))
 
 function applyTheme(next: 'light' | 'dark') {
   theme.value = next
   document.documentElement.dataset.theme = next
   localStorage.setItem(themeStorageKey.value, next)
-}
-
-function toggleTheme() {
-  applyTheme(theme.value === 'light' ? 'dark' : 'light')
 }
 
 const saved = localStorage.getItem(themeStorageKey.value)
@@ -103,9 +106,25 @@ if (saved === 'light' || saved === 'dark') {
 }
 
 .admin-shell__brand {
-  padding: 16px;
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-4) var(--sp-3) var(--sp-5);
+  font-size: var(--fs-title);
   font-weight: 600;
+}
+
+.admin-shell__mark {
+  width: var(--ctl-h);
+  height: var(--ctl-h);
+  border-radius: var(--radius);
+  background: var(--sidebar-accent);
+  color: var(--text-on-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-body);
+  flex-shrink: 0;
 }
 
 .admin-shell__nav {
@@ -114,17 +133,42 @@ if (saved === 'light' || saved === 'dark') {
 }
 
 .admin-shell__link {
-  display: block;
-  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  position: relative;
+  margin: 2px var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
   color: var(--text-on-sidebar);
   text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: background var(--dur) var(--ease), color var(--dur) var(--ease);
 
   &:hover {
     background: var(--bg-sidebar-hover);
+    color: var(--text-on-sidebar-strong);
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--ring);
   }
 
   &.router-link-active {
-    background: rgba(255, 255, 255, 0.12);
+    background: var(--bg-sidebar-active);
+    color: var(--text-on-sidebar-strong);
+    font-weight: 500;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: var(--sp-2);
+      bottom: var(--sp-2);
+      width: 3px;
+      border-radius: var(--radius-pill);
+      background: var(--sidebar-accent);
+    }
   }
 }
 
@@ -132,14 +176,14 @@ if (saved === 'light' || saved === 'dark') {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 0 16px;
+  gap: var(--sp-3);
+  padding: 0 var(--sp-6);
   background: var(--bg-topbar);
-  border-bottom: 1px solid var(--border);
+  box-shadow: inset 0 -1px 0 var(--border);
 }
 
 .admin-shell__main {
-  padding: 20px 24px;
+  padding: var(--sp-5) var(--sp-6);
   background: var(--bg-page);
 }
 </style>

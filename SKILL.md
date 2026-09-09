@@ -90,7 +90,7 @@ Step 1 识别入口与启动路径 → Step 2 方案确认单 → Step 3 默认�
 - 壳几何与 hash 路由见 [layout-patterns.md](layout-patterns.md)
 - 页面积木见 [page-patterns.md](page-patterns.md)
 - mock 按 [mock-data-rules.md](mock-data-rules.md)（量级真实、专名照搬、列表与详情自洽）
-- 色值只取自 [themes.md](themes.md) 的 token 表
+- 色值只取自 [themes.md](themes.md) 的 token 表（精工脸，禁止 `#2f6fed`）
 - 管理页之间用 hash 路由（`#/rooms`、`#/rooms/new`），刷新停留当前页
 - 登录页（需求有登录时）：无侧栏；未登录深链须回登录页，登录成功后回跳原 hash
 - 混合项目：侧栏大屏项用相对链接整页打开委托卡上的大屏文件（默认 `screen.html`），禁止 iframe 进内容区
@@ -105,7 +105,12 @@ Step 1 识别入口与启动路径 → Step 2 方案确认单 → Step 3 默认�
 逐项核对，不通过就修，修完再进入 5.5：
 
 - [ ] 壳完整：侧栏、顶栏、内容区、当前页高亮
-- [ ] 所有色值来自 [themes.md](themes.md) token 表（无裸写 `#fff`、`red` 等自造色）
+- [ ] 所有色值、圆角、阴影、字号、间距来自 [themes.md](themes.md) token（无裸写 `#fff`、`red`、`#2f6fed`，无散写 px）
+- [ ] 精工脸：卡片轻阴影无边框、表头无底色只留下边线、状态胶囊、分段主题开关、侧栏方标 + 左强调条、列宽按语义分级
+- [ ] 侧栏：每个叶子菜单有图标；收起态只留图标 + 悬停气泡；当前项用 `--sidebar-accent` 不是 `--color-primary`
+- [ ] 查看与编辑同形态（默认都是抽屉），没有「查看跳整页、编辑弹抽屉」
+- [ ] 交互态齐：hover / `:focus-visible` 焦点环 / active，过渡走 `--dur` + `--ease`
+- [ ] 跑过校验：`node <skill>/scripts/check-template.js <生成物路径>` 输出 `OK`
 - [ ] 浅色与深色各过一遍；表头、输入、抽屉、弹窗、下拉随主题变；深色浮层看不清 = P0
 - [ ] 无异常横向滚动条、无组件溢出
 - [ ] 长文本有 `text-overflow: ellipsis` 处理
@@ -177,8 +182,8 @@ ui-design/
 
 ## 硬性规则
 
-1. 色值只取自 themes.md
-2. 禁止营销落地页、大屏玻璃卡、design-taste-frontend、#00fffc、#screen 画布、transform:scale
+1. 色值只取自 themes.md（含 `--radius` / `--shadow`）；禁止 Element 默认蓝 `#2f6fed`
+2. 禁止营销落地页、大屏玻璃卡、design-taste-frontend、#00fffc、#screen 画布、transform:scale；禁止满格 1px 表格线、禁止当前菜单整条实心主色填充
 3. 管理页 hash；大屏整页相对链接；禁止 iframe
 4. localStorage 键 admin-theme:<产品名>
 5. 只出 HTML、确认单、对接占位（字段名 + USE_MOCK）
@@ -233,7 +238,7 @@ ui-design/
 
 ## 参考文件
 
-- [themes.md](themes.md) —— 浅色/深色 token 表（色彩/字体/字号）
+- [themes.md](themes.md) —— 浅色/深色 token（色彩、形状/动效、字号、间距）+ 「脸」的唯一口径
 - [layout-patterns.md](layout-patterns.md) —— 壳几何、hash 路由、站点地图、灰框骨架（Step 3.5）
 - [page-patterns.md](page-patterns.md) —— 页面积木（列表、表单、详情、登录、树+表等）
 - [mock-data-rules.md](mock-data-rules.md) —— mock 规则；混合项目共享实体一致
