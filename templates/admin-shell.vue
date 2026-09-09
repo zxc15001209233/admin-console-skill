@@ -36,16 +36,23 @@
       </el-aside>
       <el-container>
         <el-header height="56px" class="admin-shell__header">
-          <!-- 主题：分段开关（禁止单个文字按钮）；html data-theme；键 admin-theme:产品名 -->
+          <!-- 登录页不在本壳内：登录/忘记密码须自带 theme-seg，键仍 admin-theme:产品名 -->
           <el-radio-group :model-value="theme" size="small" @change="applyTheme">
-            <el-radio-button value="light">浅</el-radio-button>
-            <el-radio-button value="dark">深</el-radio-button>
+            <el-radio-button value="light" aria-label="浅色" title="浅色">
+              <svg class="theme-ico" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v1.5M12 19.5V21M4.93 4.93l1.06 1.06M17.99 17.99l1.06 1.06M3 12h1.5M19.5 12H21M4.93 19.07l1.06-1.06M17.99 6.01l1.06-1.06"/></svg>
+            </el-radio-button>
+            <el-radio-button value="dark" aria-label="深色" title="深色">
+              <svg class="theme-ico" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 14.5A8.2 8.2 0 1 1 9.5 4 6.4 6.4 0 0 0 20 14.5z"/></svg>
+            </el-radio-button>
           </el-radio-group>
           <!-- 演示角色只改显隐，不改 currentUser / 个人中心 -->
-          <el-select v-model="demoRole" size="small" style="width: 120px">
-            <el-option label="员工" value="staff" />
-            <el-option label="管理员" value="admin" />
-          </el-select>
+          <label class="demo-role">
+            <span>演示</span>
+            <el-select v-model="demoRole" size="small" style="width: 120px">
+              <el-option label="员工" value="staff" />
+              <el-option label="管理员" value="admin" />
+            </el-select>
+          </label>
           <el-dropdown trigger="click" @command="onUserCommand">
             <span class="admin-shell__user">{{ currentUser.name }}</span>
             <template #dropdown>
@@ -230,6 +237,29 @@ if (saved === 'light' || saved === 'dark') {
   padding: 0 var(--sp-6);
   background: var(--bg-topbar);
   box-shadow: inset 0 -1px 0 var(--border);
+}
+
+.theme-ico {
+  width: var(--ico);
+  height: var(--ico);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+}
+
+.demo-role {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: var(--ctl-h);
+  padding: 0 var(--sp-2);
+  background: var(--bg-muted);
+  border-radius: var(--radius);
+  color: var(--text-3);
+  font-size: var(--fs-label);
 }
 
 .admin-shell__main {

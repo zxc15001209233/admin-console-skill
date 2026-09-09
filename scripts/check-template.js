@@ -89,7 +89,21 @@ if (hasLogin) {
   must(/id=["']profileDrawer["']/.test(html), 'personal center must use #profileDrawer, not reuse #drawer');
   must(/function openProfile/.test(html) && /profileDrawer/.test(scripts), 'openProfile must target #profileDrawer');
   must(/pendingHash\s*=\s*['"]{2}/.test(scripts), 'logout must clear pendingHash (do not restore previous page)');
+  must(/function themeSegHtml/.test(scripts), 'login/forgot must render .theme-seg via themeSegHtml (shell toggle is hidden on login)');
+  must(html.includes('--login-photo') && html.includes('--login-scrim'), 'login right pane needs --login-photo + --login-scrim');
+  must(/--login-photo:\s*none/.test(html), 'login default right pane must be empty (--login-photo:none), not glow/grid/corners');
+  must(html.includes('--login-photo-size') && html.includes('--login-photo-repeat') && html.includes('--login-photo-pos'), 'login photo override needs size/repeat/pos tokens');
+  must(!html.includes('--login-glow') && !html.includes('--login-line') && !html.includes('--login-corner') && !html.includes('--login-dot-color'), 'login must not ship glow/line/dot deco tokens');
+  must(!/--login-photo:[^;]*data:image/.test(html), 'login --login-photo must not be an SVG data-URI');
+  must(/\.login-main::before/.test(styles), 'login photo needs ::before scrim so the card stays readable');
+  must(html.includes('--login-mark'), 'login brand mark must use --login-mark');
+  must(html.includes('--login-ctl'), 'login fields must use --login-ctl');
+  must(html.includes('--login-wash'), 'login watermark size must use --login-wash');
+  must(html.includes('login-watermark'), 'login left column needs .login-watermark');
+  must(/欢迎回来/.test(html), 'login card title should be 欢迎回来, not duplicate 登录');
 }
+
+must(/function renderNotFound/.test(scripts) && /页面不存在/.test(html), 'unknown hash must render 404 empty, not silently bounce home');
 
 if (hasDestructive || isTemplate) {
   must(/id=["']modal["']/.test(html), 'destructive actions need #modal, not window.confirm');
@@ -98,6 +112,7 @@ if (hasDestructive || isTemplate) {
 
 if (hasFilterBar) {
   must(/URLSearchParams/.test(scripts), 'filter/page state must round-trip via hash query (URLSearchParams)');
+  must(!html.includes('class="spacer"'), 'filter actions must sit next to filters, not a flex:1 spacer');
 }
 
 if (hasLogin || /currentUser/.test(html)) {
@@ -111,16 +126,27 @@ if (hasLogin || /currentUser/.test(html)) {
   '--color-primary-hover', '--color-primary-soft', '--ring',
   '--border-strong', '--shadow-1', '--shadow-2',
   '--radius', '--radius-pill', '--dur', '--ease',
-  '--fs-title', '--fs-body', '--fs-label', '--fs-micro',
+  '--fs-brand', '--fs-page', '--fs-title', '--fs-body', '--fs-label', '--fs-micro',
   '--sp-2', '--sp-4', '--ctl-h', '--row-h',
   '--sidebar-accent', '--bg-sidebar-active', '--text-on-sidebar-strong', '--ico',
-  '--ctl-sm', '--accent-bar', '--ring-w', '--seg-gap', '--modal-w',
+  '--ctl-sm', '--accent-bar', '--ring-w', '--seg-gap', '--modal-w', '--empty-ico', '--stat-max',
 ].forEach((t) => must(html.includes(t), 'missing token ' + t));
 
 /* ---- 精工脸 ---- */
 must(html.includes('#3b5bdb'), 'missing craft primary #3b5bdb');
 must(html.includes('brand-mark'), 'missing sidebar brand mark');
 must(html.includes('theme-seg'), 'missing segmented theme toggle');
+must(html.includes('ico-sun') && html.includes('ico-moon'), 'theme toggle must use sun/moon svg symbols, not 浅/深 text');
+must(/aria-label=["']浅色["']/.test(html) && /aria-label=["']深色["']/.test(html), 'theme buttons need aria-label 浅色/深色');
+must(html.includes('ico-panel'), 'sidebar collapse must use #ico-panel svg, not ☰');
+must(!html.includes('☰') && !html.includes('▾'), 'chrome must not use hamburger/chevron emoji');
+must(/color-scheme:\s*dark/.test(html), 'dark theme needs color-scheme so native controls match');
+must(/\.field:focus-visible/.test(styles), 'inputs must use :focus-visible, not :focus');
+must(/prefers-reduced-motion/.test(styles), 'drawer/modal motion must honor prefers-reduced-motion');
+must(/overscroll-behavior/.test(styles), 'drawer/modal need overscroll-behavior:contain');
+must(html.includes('ico-empty') && html.includes('empty-ico'), 'empty states need a linear empty icon');
+must(/aria-live/.test(html), 'toast needs aria-live for status updates');
+must(/id=["']roleSel["']/.test(html) ? html.includes('demo-role') : true, 'demo role select must be visually secondary (.demo-role)');
 must(html.includes('focus-visible'), 'missing :focus-visible ring (keyboard focus invisible)');
 must(/\.pill|radius-pill/.test(html), 'missing status pill');
 must(html.includes('<symbol'), 'missing svg symbol sprite for menu icons');
@@ -172,6 +198,10 @@ if (isTemplate) {
   must(html.includes('date-range'), 'template must demo .date-range');
   must(/id=["']modal["']/.test(html), 'template must demo #modal');
   must(/id=["']profileDrawer["']/.test(html), 'template must demo #profileDrawer');
+  must(/data-sort=/.test(html), 'template must demo sortable headers');
+  must(/position:\s*sticky/.test(styles), 'template must demo sticky table header');
+  must(/multi-select/.test(html), 'template must demo .multi-select filter');
+  must(/type=["']file["']/.test(html), 'template must demo fake file upload field');
 }
 
 if (fails.length) {

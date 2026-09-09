@@ -49,6 +49,14 @@
 提示：生成带筛选的列表（若有树+表且节点有摘要则带范围条）。
 期望：查询/分页后刷新，筛选项仍在。浅色侧栏白底。范围条仅节点有摘要时出现，标签与值同一行、靠左。
 
+## P13 登录页也能切深色
+提示：生成带登录的管理 HTML。打开 `#/login`（及忘记密码若有）。
+期望：右上角有太阳/月亮分段开关（读屏名浅色/深色），写入同一个 `admin-theme:<产品名>`。禁止只有壳顶栏能切、登录页只能看浅色。右栏默认 `--bg-page` 空底，卡片仍可读。登录标题「欢迎回来」。左栏垂直居中。
+
+## P14 未知路由是 404
+提示：已登录后打开一个不存在的 hash。
+期望：空态「页面不存在」+ 返回首页。禁止偷偷 `navigate` 到工作台。
+
 ## 静态对照（实现后）
 - P1：SKILL 混合文档只做管理页 — `SKILL.md` 混合文档条
 - P2：确认单未发出不得写 — `SKILL.md` 工作流程
@@ -62,3 +70,5 @@
 - P10：`#profileDrawer` — `page-patterns.md` 登录用户区
 - P11：退出清 `pendingHash` — `layout-patterns.md` Hash 路由
 - P12：`URLSearchParams` + 浅色侧栏 + 范围条按需 — `layout-patterns.md`；`page-patterns.md` 树+表
+- P13：登录 `.theme-seg` — `page-patterns.md` 登录壳；checker 查 `themeSegHtml`
+- P14：`renderNotFound` — `page-patterns.md` 404

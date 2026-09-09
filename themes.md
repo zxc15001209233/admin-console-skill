@@ -44,8 +44,10 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--muted-soft` | `#f2f4f7` | 中性胶囊底 |
 | `--shadow-1` | `0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)` | 卡片（轻） |
 | `--shadow-2` | `0 12px 32px rgba(16,24,40,.12)` | 抽屉 / toast（浮层） |
+| `--login-scrim` | `transparent` | 无图不遮；用户图改成 `rgba(240,242,245,.48)` |
+| `--login-photo` | `none` | 登录右栏默认空底（`--bg-page`）。用户图改成 `url("相对路径或 https")`，并加深 `--login-scrim`。size/repeat/pos 默认已是 `cover` / `no-repeat` / `center` |
 
-浅色侧栏是白底深字：文字走 `--text-on-sidebar` / `--text-on-sidebar-strong`，不要用 `--text-on-primary` 写菜单。侧栏与内容区用右侧 `inset` `--border` 分界，不要再画深墨墙。登录左栏同样走 `--bg-sidebar`，标题用 `--text-on-sidebar-strong`。
+浅色侧栏是白底深字：文字走 `--text-on-sidebar` / `--text-on-sidebar-strong`，不要用 `--text-on-primary` 写菜单。侧栏与内容区用右侧 `inset` `--border` 分界，不要再画深墨墙。登录左栏同样走 `--bg-sidebar`，**垂直居中**，标题 `--fs-brand` + `--text-on-sidebar-strong`，副标题 `--fs-title`，背后一颗 `.login-watermark`（`--login-wash`、透明度 `.06`）。右栏默认 `--bg-page`（`--login-photo: none`），有图才铺 `--login-photo` 并叠 `--login-scrim`，卡片浮在上面。用户给了图：替换 `--login-photo` 为 `url(...)`，并加深 `--login-scrim`。`html` 要写 `color-scheme: light` / `dark`，免得原生滚动条和日期控件漏浅色。
 
 ## 深色
 
@@ -85,8 +87,10 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--muted-soft` | `rgba(107,119,133,.22)` | 中性胶囊底 |
 | `--shadow-1` | `0 1px 2px rgba(0,0,0,.28)` | 卡片（轻） |
 | `--shadow-2` | `0 12px 32px rgba(0,0,0,.36)` | 抽屉 / toast |
+| `--login-scrim` | `transparent` | 无图不遮；用户图改成 `rgba(13,17,23,.55)` |
+| `--login-photo` | `none` | 登录右栏默认空底；用户图覆盖时加强遮罩 |
 
-深色下 `.drawer`、下拉、toast 必须用 `--bg-card` + `--text-1`，禁止残留浅色白底。
+深色下 `.drawer`、下拉、toast 必须用 `--bg-card` + `--text-1`，禁止残留浅色白底。`html[data-theme="dark"]` 必须设 `color-scheme: dark`，原生滚动条 / `select` / 日期控件才跟壳走。
 
 ## 形状 / 动效（两套主题共用，写在 `:root`）
 
@@ -104,8 +108,9 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | Token | 值 | 用途 |
 |---|---|---|
 | `--fs-num` | `24px` | 工作台数字 |
-| `--fs-brand` | `20px` | 登录页品牌名 |
-| `--fs-title` | `16px` | 页标题 / 抽屉标题 / 侧栏产品名 |
+| `--fs-brand` | `32px` | 登录页品牌名 |
+| `--fs-page` | `20px` | 内容区页标题（`.page-head h1`） |
+| `--fs-title` | `16px` | 抽屉 / 弹窗 / 侧栏产品名 / 空态标题 |
 | `--fs-body` | `13px` | 正文、表格、控件 |
 | `--fs-label` | `12px` | 卡片标签、分页、胶囊 |
 | `--fs-micro` | `11px` | 侧栏分组标题、表头 |
@@ -135,6 +140,14 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--ring-w` | `3px` | `:focus-visible` 焦点环宽度 |
 | `--seg-gap` | `2px` | 分段开关内间隙、胶囊竖向内边距 |
 | `--modal-w` | `420px` | 确认弹窗宽度 |
+| `--login-mark` | `48px` | 登录页左栏方标 |
+| `--login-wash` | `240px` | 登录左栏水印字 |
+| `--login-photo-size` | `cover` | 用户图铺满右栏 |
+| `--login-photo-repeat` | `no-repeat` | 用户图不平铺 |
+| `--login-photo-pos` | `center` | 用户图居中 |
+| `--login-ctl` | `36px` | 登录卡片输入 / 主按钮高度 |
+| `--empty-ico` | `48px` | 空态线性图标 |
+| `--stat-max` | `960px` | 工作台数字卡行最大宽度 |
 
 ## 脸（生成时必须遵守）
 
@@ -151,4 +164,13 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 - **头像**：`--color-primary-soft` 底 + `--color-primary` 字，禁止白底白圈。
 - **空态**：小标题 + 说明 + 主操作三段，禁止只有一行灰字。
 - **分页**：`共 N 条` + 页码，弱化上一页/下一页按钮的视觉重量。
+- **表头吸顶**：滚动容器内 `th` 用 `--bg-card` 作底（与表同色），禁止 `--bg-muted`。
+- **主题开关**：分段两颗按钮，太阳 = 浅色、月亮 = 深色（`#ico-sun` / `#ico-moon`）。按钮上看不见「浅 / 深」，读屏名写在 `aria-label`，鼠标悬停用 `title`。禁止 emoji。
+- **壳图标**：侧栏收起用 `#ico-panel`，分组箭头用 `#ico-chevron` 旋转，禁止 `☰` / `▾`。
+- **页标题**：内容区 `.page-head h1` 用 `--fs-page`，不要和抽屉标题抢同一个 16px。
+- **筛选条**：筛选项和「查询 / 重置」左对齐挨在一起。禁止 `.spacer { flex:1 }` 把按钮甩到最右。
+- **演示角色**：`.demo-role` 矮一档、标「演示」，不要做成和用户区同级的正式下拉。
+- **登录页**：左品牌带加大字号、垂直居中 + 淡水印方标；右栏默认空底（`--bg-page`），用户提供图时写入 `--login-photo` 并加强 `--login-scrim`。登录卡片标题写「欢迎回来」。禁止营销大图当默认、禁止玻璃拟态、禁止假建筑剪影、禁止光晕/点阵/折角装饰底。
+- **空态**：三段式文案上方一颗 `--empty-ico` 线性图标，不要插画。
+- **工作台数字卡**：`.stat-row` 设 `--stat-max`，不要在超宽屏拉满。
 - 禁止 `backdrop-filter` 玻璃、禁止营销大留白、禁止 `#00fffc`、禁止 `#2f6fed`。
