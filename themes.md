@@ -1,6 +1,6 @@
 # 后台主题 Token
 
-生成时所有色值、圆角、阴影、字号、间距必须取自本表，禁止散写 px 与自造色。
+生成时所有色值、圆角、阴影、字号、间距必须取自本表。禁止散写色值与自造色。壳几何（侧栏/顶栏/抽屉/控件高/强调条/头像/分页钮/焦点环）走 token，禁止把 `28px` / `3px` 写进组件样式。表格列宽、登录卡宽度可按内容定宽。
 禁止大屏科技青 `#00fffc`，禁止 Element 默认蓝 `#2f6fed`。
 
 视觉口径：**精工中后台**（飞书 / Linear 那种克制）。层次靠字重、字色、留白，不靠色块和描边。
@@ -130,18 +130,23 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--topbar-h` | `56px` | 顶栏 |
 | `--drawer-w` | `480px` | 抽屉 |
 | `--tree-w` | `240px` | 树+表 的左树 |
+| `--ctl-sm` | `28px` | 侧栏收起钮 / 分页钮 / 头像 |
+| `--accent-bar` | `3px` | 当前菜单左强调条 |
+| `--ring-w` | `3px` | `:focus-visible` 焦点环宽度 |
+| `--seg-gap` | `2px` | 分段开关内间隙、胶囊竖向内边距 |
+| `--modal-w` | `420px` | 确认弹窗宽度 |
 
 ## 脸（生成时必须遵守）
 
 - **卡片**：`--shadow-1` + `--radius`，**不要再套一圈边框**。悬停可微抬升（`--shadow-2` 或 `translateY(-1px)`），不要放大。
 - **表格**：表头**无底色**，只用 `--border-strong` 下边线 + `--fs-micro` 字距；行之间 `--border` 细线，最后一行无线；行高 `--row-h`；禁止每个单元格四边框。
 - **列宽按语义分级**，禁止所有列一律 `max-width`：`table-layout: fixed`，除主体列（名称/标题）留 `width:auto` 吸收剩余宽度外，其余列定宽——短码/性别窄列、备注宽列。数值与编号列 `font-variant-numeric: tabular-nums`。列宽平均摊开 = 脸不合格。
-- **当前菜单**：左侧 `3px` `--sidebar-accent` 条 + `--bg-sidebar-active`，文字 `--text-on-sidebar-strong`，禁止整条实心主色填充。浅色侧栏 `--sidebar-accent` 与主色同值；**深色**侧栏必须用亮一档 `#7d94f8`，不要把 `--color-primary` 直接铺到深底上（会发暗发脏）。
+- **当前菜单**：左侧 `var(--accent-bar)` `--sidebar-accent` 条 + `--bg-sidebar-active`，文字 `--text-on-sidebar-strong`，禁止整条实心主色填充。浅色侧栏 `--sidebar-accent` 与主色同值；**深色**侧栏必须用亮一档 `#7d94f8`，不要把 `--color-primary` 直接铺到深底上（会发暗发脏）。
 - **菜单图标**：每个叶子菜单必配一个 `--ico` 尺寸的线性图标，页面内用内联 `<symbol>` 雪碧图 + `<use>` 复用，`stroke: currentColor` 跟随主题。禁止 emoji、禁止图标字体外链、禁止只有一半菜单有图标。
 - **侧栏收起态**：只留图标居中，标签换成悬停气泡（`--bg-card` + `--shadow-2`，`left:100%` 外挂）。收起时分组标题隐藏、改用一条细分割线，且分组一律展开——没有标题就没法再点开。气泡要能溢出侧栏，所以侧栏不能设 `overflow:hidden`，省略号交给菜单项内部的 `.label`。
 - **状态**：浅底胶囊（`--success-soft` 等）+ `--radius-pill`，禁止只改字色。
 - **按钮**：主按钮实心（含 hover / active 两态）；次按钮 `--bg-muted` 无描边；行内操作用文字链，删除用危险色文字链。
-- **交互态必须齐**：hover、`:focus-visible`（`box-shadow: 0 0 0 3px var(--ring)`）、active，过渡 `--dur var(--ease)`。缺交互态 = 脸不合格。
+- **交互态必须齐**：hover、`:focus-visible`（`box-shadow: 0 0 0 var(--ring-w) var(--ring)`）、active，过渡 `--dur var(--ease)`。缺交互态 = 脸不合格。
 - **工作台数字卡**：靠 `--fs-num` 数值 + `--fs-label` 标签建立层次，**不要每张都挂主色竖条**（重复且廉价）。
 - **头像**：`--color-primary-soft` 底 + `--color-primary` 字，禁止白底白圈。
 - **空态**：小标题 + 说明 + 主操作三段，禁止只有一行灰字。

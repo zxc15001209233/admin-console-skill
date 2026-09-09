@@ -110,7 +110,7 @@ HTML 自建控件；转 Vue 后换 Element Plus。布局/菜单/字段保持，*
 | `templates/admin.html` | 单文件壳示例 |
 | `templates/admin-shell.vue` | 实现阶段对照用，禁止本 Skill 写入业务仓库 |
 | `templates/element-theme.less` | Element Plus 浅/深 token 映射 |
-| `scripts/check-template.js` | 校验 HTML 是否踩大屏脸、token 是否齐、有无裸色/裸圆角；可传生成物路径 |
+| `scripts/check-template.js` | 校验 HTML 是否踩大屏脸、token 是否齐、有无裸色/裸圆角/散写 28px·3px、登录用户区、弹窗；可传生成物路径 |
 
 ## 主题
 

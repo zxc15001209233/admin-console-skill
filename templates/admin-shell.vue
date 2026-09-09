@@ -1,6 +1,8 @@
 <!-- Skill 对照模板。admin-console-generator 不得把本文件写入业务仓库。仅在 requirements-to-dev 已审开发计划后由对方拷贝改编。 -->
 <!--
-  EP 必须用清单（禁止用原生控件替代）：el-table、el-form、el-drawer、el-pagination
+  EP 必须用清单（禁止用原生控件替代）：el-table、el-form、el-drawer、el-dialog、el-pagination、el-dropdown
+  个人中心用独立 el-drawer，禁止和业务查看共用一个抽屉
+  删除确认用 el-dialog，禁止 window.confirm
   大屏入口：菜单用 a[href="screen.html"] 整页跳转，禁止 iframe 嵌入 router-view
 -->
 <template>
@@ -39,26 +41,41 @@
             <el-radio-button value="light">浅</el-radio-button>
             <el-radio-button value="dark">深</el-radio-button>
           </el-radio-group>
-          <!-- 演示角色 el-select -->
+          <!-- 演示角色只改显隐，不改 currentUser / 个人中心 -->
           <el-select v-model="demoRole" size="small" style="width: 120px">
             <el-option label="员工" value="staff" />
             <el-option label="管理员" value="admin" />
           </el-select>
-          <el-dropdown trigger="click">
-            <span class="admin-shell__user">演示用户</span>
+          <el-dropdown trigger="click" @command="onUserCommand">
+            <span class="admin-shell__user">{{ currentUser.name }}</span>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item>个人中心</el-dropdown-item>
-                <el-dropdown-item divided>退出登录</el-dropdown-item>
+                <el-dropdown-item command="profile">个人中心</el-dropdown-item>
+                <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
         </el-header>
         <el-main class="admin-shell__main">
           <router-view />
+          <!-- 列表筛选项应写进路由 query，刷新可复现 -->
         </el-main>
       </el-container>
     </el-container>
+    <el-drawer v-model="profileOpen" title="个人中心" :close-on-click-modal="false">
+      <el-descriptions :column="1">
+        <el-descriptions-item label="姓名">{{ currentUser.name }}</el-descriptions-item>
+        <el-descriptions-item label="账号">{{ currentUser.username }}</el-descriptions-item>
+        <el-descriptions-item label="角色">{{ currentUser.roleLabel }}</el-descriptions-item>
+      </el-descriptions>
+    </el-drawer>
+    <el-dialog v-model="modalOpen" :title="modalTitle" width="420px" :close-on-click-modal="false">
+      <p>{{ modalBody }}</p>
+      <template #footer>
+        <el-button @click="modalOpen = false">取消</el-button>
+        <el-button type="danger" @click="onModalOk">确定</el-button>
+      </template>
+    </el-dialog>
   </el-config-provider>
 </template>
 
@@ -81,6 +98,29 @@ const demoRole = ref<'staff' | 'admin'>('staff')
 watch(demoRole, (role) => {
   document.documentElement.dataset.role = role
 })
+
+const currentUser = ref({
+  name: '张伟',
+  username: 'zhangwei',
+  role: 'staff',
+  roleLabel: '员工',
+})
+const profileOpen = ref(false)
+const modalOpen = ref(false)
+const modalTitle = ref('确认')
+const modalBody = ref('')
+
+function onUserCommand(cmd: string) {
+  if (cmd === 'profile') profileOpen.value = true
+  if (cmd === 'logout') {
+    profileOpen.value = false
+    // 清登录态后 router.push('/login')，不要回跳退出前的页
+  }
+}
+
+function onModalOk() {
+  modalOpen.value = false
+}
 
 const theme = ref<'light' | 'dark'>('light')
 
@@ -147,7 +187,7 @@ if (saved === 'light' || saved === 'dark') {
   align-items: center;
   gap: var(--sp-2);
   position: relative;
-  margin: 2px var(--sp-2);
+  margin: var(--seg-gap) var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   color: var(--text-on-sidebar);
   text-decoration: none;
@@ -161,7 +201,7 @@ if (saved === 'light' || saved === 'dark') {
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px var(--ring);
+    box-shadow: 0 0 0 var(--ring-w) var(--ring);
   }
 
   &.router-link-active {
@@ -175,7 +215,7 @@ if (saved === 'light' || saved === 'dark') {
       left: 0;
       top: var(--sp-2);
       bottom: var(--sp-2);
-      width: 3px;
+      width: var(--accent-bar);
       border-radius: var(--radius-pill);
       background: var(--sidebar-accent);
     }

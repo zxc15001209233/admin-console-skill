@@ -92,7 +92,10 @@ Step 1 识别入口与启动路径 → Step 2 方案确认单 → Step 3 默认�
 - mock 按 [mock-data-rules.md](mock-data-rules.md)（量级真实、专名照搬、列表与详情自洽）
 - 色值只取自 [themes.md](themes.md) 的 token 表（精工脸，禁止 `#2f6fed`）
 - 管理页之间用 hash 路由（`#/rooms`、`#/rooms/new`），刷新停留当前页
-- 登录页（需求有登录时）：无侧栏；未登录深链须回登录页，登录成功后回跳原 hash
+- 列表的筛选 / 分页 / 树选中写入 hash query（`#/rooms?q=一号&page=2`），刷新不丢
+- 登录页（需求有登录时）：无侧栏；未登录深链须回登录页，登录成功后回跳原 hash（含 query）。退出登录清 `pendingHash`，**不**回跳退出前的页
+- 有登录时：顶栏头像菜单；个人中心用独立 `#profileDrawer`，禁止复用业务 `#drawer`
+- 删除 / 解锁等破坏性操作：用 `#modal` 确认，禁止 `window.confirm`
 - 混合项目：侧栏大屏项用相对链接整页打开委托卡上的大屏文件（默认 `screen.html`），禁止 iframe 进内容区
 - 有管理壳时，每个大屏 HTML 顶栏加「返回管理」→ `admin.html`（由大屏生成器负责，本 Skill 在确认单锁文件名）
 - 交互用原生 JS + mock 假交互
@@ -105,18 +108,20 @@ Step 1 识别入口与启动路径 → Step 2 方案确认单 → Step 3 默认�
 逐项核对，不通过就修，修完再进入 5.5：
 
 - [ ] 壳完整：侧栏、顶栏、内容区、当前页高亮
-- [ ] 所有色值、圆角、阴影、字号、间距来自 [themes.md](themes.md) token（无裸写 `#fff`、`red`、`#2f6fed`，无散写 px）
+- [ ] 所有色值、圆角、阴影、字号、间距来自 [themes.md](themes.md) token（无裸写 `#fff`、`red`、`#2f6fed`；壳几何无散写 `28px` / `3px`）
 - [ ] 精工脸：卡片轻阴影无边框、表头无底色只留下边线、状态胶囊、分段主题开关、侧栏方标 + 左强调条、列宽按语义分级
 - [ ] 侧栏：每个叶子菜单有图标；收起态只留图标 + 悬停气泡；当前项用 `--sidebar-accent` 左条 + `--bg-sidebar-active`（浅色可与主色同值；深色必须用亮一档强调色，禁止整条实心主色）
 - [ ] 查看与编辑同形态（默认都是抽屉），没有「查看跳整页、编辑弹抽屉」
 - [ ] 交互态齐：hover / `:focus-visible` 焦点环 / active，过渡走 `--dur` + `--ease`
 - [ ] 跑过校验：`node <skill>/scripts/check-template.js <生成物路径>` 输出 `OK`
 - [ ] 浅色与深色各过一遍；表头、输入、抽屉、弹窗、下拉随主题变；深色浮层看不清 = P0
+- [ ] 破坏性操作用 `#modal`，没有 `window.confirm`
 - [ ] 无异常横向滚动条、无组件溢出
 - [ ] 长文本有 `text-overflow: ellipsis` 处理
 - [ ] 空态与校验：筛空有空态；校验失败保留已填
-- [ ] hash 刷新不丢页；有登录时深链回登录再回跳
-- [ ] 有登录时：顶栏头像下拉「个人中心 / 退出登录」；个人中心为只读抽屉；退出回 `#/login`
+- [ ] hash 刷新不丢页；列表筛选/分页在 query 里；有登录时深链回登录再回跳（含 query）
+- [ ] 有登录时：顶栏头像下拉「个人中心 / 退出登录」；个人中心为独立 `#profileDrawer`；退出回 `#/login` 且不回跳
+- [ ] 个人中心字段读 `MOCK.currentUser`（含 `roleLabel`），不读演示角色下拉
 - [ ] 演示角色显隐（若有）切换立刻生效
 - [ ] 筛选/搜索/分页、新建/编辑/删除后列表与详情数据自洽；只 toast 不变数据 = P0
 - [ ] 主题切换写入 `localStorage` 键 `admin-theme:<产品名>`，刷新保持
@@ -191,13 +196,15 @@ ui-design/
 6. 用户说转 Vue / 开始开发：交回 requirements-to-dev
 7. 混合单边审核不因对端文件不存在判 404
 8. 审批流页/权限矩阵页进缺失项，不发明
+9. 删除/解锁/批量删除用 `#modal`，禁止 `window.confirm`；个人中心用独立 `#profileDrawer`，禁止复用业务 `#drawer`
+10. 列表筛选/分页/树选中写入 hash query；退出登录必须清 `pendingHash`，禁止回跳退出前的页
 
 补充细则：
 
 - 禁止把大屏 token 或玻璃卡模板拷进后台壳
 - 不把大屏嵌进管理内容区
 - 参考图只辅助信息架构，不承诺像素复刻现有后台皮肤
-- 完整权限矩阵页、审批流页不发明；角色按钮显隐用「演示角色」，不算权限配置页
+- 完整权限矩阵页、审批流页不发明；角色按钮显隐用「演示角色」，不算权限配置页。演示角色不改 `MOCK.currentUser`；个人中心角色读 `roleLabel`
 - 不写真实路径、错误码、DDL 全文
 - 不做移动端适配
 - 解析需求文档/参考图时，图片的布局精度高于文字；文档内部矛盾必须列入疑点清单，禁止静默选择
@@ -241,7 +248,7 @@ ui-design/
 
 - [themes.md](themes.md) —— 浅色/深色 token（色彩、形状/动效、字号、间距）+ 「脸」的唯一口径
 - [layout-patterns.md](layout-patterns.md) —— 壳几何、hash 路由、站点地图、灰框骨架（Step 3.5）
-- [page-patterns.md](page-patterns.md) —— 页面积木（列表、表单、详情、登录、树+表等）
+- [page-patterns.md](page-patterns.md) —— 页面积木（列表、表单、详情、登录、树+表、弹窗、批量条、身份模型）
 - [mock-data-rules.md](mock-data-rules.md) —— mock 规则；混合项目共享实体一致
 - [review-checklist.md](review-checklist.md) —— Step 5.5 审核清单（含单边审核 vs 联合验收）
 - [templates/admin.html](templates/admin.html) —— HTML 壳骨架模板

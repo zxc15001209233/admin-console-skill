@@ -12,6 +12,8 @@
 
 人名用张伟、王芳、李娜；时间相对今天。文档上的专名与锚点数字整句照搬。
 
+`currentUser` 必须含 `name`、`username`、`role`、`roleLabel`。个人中心只读这四个字段，不读演示角色下拉。
+
 ## 代码组织
 
 - 在 `admin.html` 内联一份 `MOCK` 对象，保证双击可开、零构建
@@ -26,7 +28,7 @@ const MOCK = {
     { id: 'r1', name: '三楼会议室 A', capacity: 12, status: '可用', updatedAt: '今天 09:12' },
     // ...
   ],
-  currentUser: { name: '张伟', role: 'admin' },
+  currentUser: { name: '张伟', username: 'zhangwei', role: 'admin', roleLabel: '管理员' },
 };
 ```
 
@@ -59,7 +61,8 @@ const MOCK = {
 |---|---|
 | 筛选 / 分页 | 从 `MOCK` 过滤；总条数与分页一致 |
 | 新建 / 编辑 | 写入 `MOCK` 数组；列表立即可见 |
-| 删除 | `confirm` 后从 `MOCK` 移除 |
+| 删除 | `#modal` 确认后从 `MOCK` 移除 |
+| 批量删除 | `#modal` 确认后批量移除；勾选状态清空 |
 | 详情 | 按 id 查同一 `MOCK` 源 |
 | 导入 | 可追加行或 toast；条数变化合理 |
 
