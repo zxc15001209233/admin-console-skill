@@ -21,7 +21,7 @@
     --success-soft:#edfaf3; --warning-soft:#fff6ed; --muted-soft:#f2f4f7;
     --shadow-1:0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06);
     --shadow-2:0 12px 32px rgba(16,24,40,.12);
-    --login-scrim:transparent; --login-photo:none;
+    --login-scrim:rgba(240,242,245,.28); --login-photo:none; --login-sky-top:#eef1fc; --login-sky-bot:#dce3f0; --login-far:#d2dae8; --login-build:#c4cde0; --login-build-2:#c0cadc; --login-build-3:#c8d2e4; --login-ground:#d4dce8; --login-street:#ccd6e4; --login-win:rgba(26,29,36,.08); --login-win-lit:transparent;
   }
   html[data-theme="dark"] {
     color-scheme:dark;
@@ -38,7 +38,7 @@
     --success-soft:rgba(60,203,127,.16); --warning-soft:rgba(247,178,103,.16); --muted-soft:rgba(107,119,133,.22);
     --shadow-1:0 1px 2px rgba(0,0,0,.28);
     --shadow-2:0 12px 32px rgba(0,0,0,.36);
-    --login-scrim:transparent; --login-photo:none;
+    --login-scrim:rgba(13,17,23,.4); --login-photo:none; --login-sky-top:#161d2a; --login-sky-bot:#10161f; --login-far:#1a2432; --login-build:#1e2838; --login-build-2:#222e40; --login-build-3:#1a2434; --login-ground:#121820; --login-street:#0f141c; --login-win:rgba(232,237,244,.04); --login-win-lit:rgba(247,178,103,.28);
   }
   :root {
     --radius:8px; --radius-sm:6px; --radius-pill:999px;
@@ -46,7 +46,7 @@
     --fs-num:24px; --fs-brand:32px; --fs-page:20px; --fs-title:16px; --fs-body:13px; --fs-label:12px; --fs-micro:11px;
     --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
     --ico:18px; --ctl-h:32px; --row-h:44px;
-    --sidebar-w:232px; --sidebar-w-collapsed:64px; --topbar-h:56px; --drawer-w:480px; --tree-w:240px; --ctl-sm:28px; --accent-bar:3px; --ring-w:3px; --seg-gap:2px; --modal-w:420px; --login-mark:48px; --login-wash:240px; --login-photo-size:cover; --login-photo-repeat:no-repeat; --login-photo-pos:center; --login-ctl:36px; --empty-ico:48px; --stat-max:960px;
+    --sidebar-w:232px; --sidebar-w-collapsed:64px; --topbar-h:56px; --drawer-w:480px; --tree-w:240px; --ctl-sm:28px; --accent-bar:3px; --ring-w:3px; --seg-gap:2px; --modal-w:420px; --login-mark:48px; --login-wash:240px; --login-scene:.5; --login-photo-size:cover; --login-photo-repeat:no-repeat; --login-photo-pos:center; --login-ctl:36px; --empty-ico:48px; --stat-max:960px;
   }
 
   * { box-sizing:border-box; }
@@ -417,8 +417,9 @@
     background-color:var(--bg-page); background-image:var(--login-photo);
     background-size:var(--login-photo-size); background-position:var(--login-photo-pos); background-repeat:var(--login-photo-repeat);
   }
-  .login-main::before { content:""; position:absolute; inset:0; background:var(--login-scrim); pointer-events:none; }
-  .login-card { width:360px; padding:var(--sp-6); background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-2); position:relative; z-index:1; }
+  .login-scene { position:absolute; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; opacity:var(--login-scene); }
+  .login-main::before { content:""; position:absolute; inset:0; z-index:1; background:var(--login-scrim); pointer-events:none; }
+  .login-card { width:360px; padding:var(--sp-6); background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-2); position:relative; z-index:2; }
   .login-card h2 { margin:0 0 var(--sp-5); font-size:var(--fs-title); font-weight:600; }
   .login-card label { display:block; margin-bottom:var(--sp-4); color:var(--text-2); }
   .login-card .field { display:block; width:100%; height:var(--login-ctl); margin-top:var(--sp-1); }
@@ -608,6 +609,24 @@ function themeSegHtml() {
     + (t === theme ? ' class="active"' : '')
     + '><svg class="theme-ico" aria-hidden="true"><use href="#' + ico + '"/></svg></button>';
   return '<div class="theme-seg">' + btn('light', 'ico-sun', '浅色') + btn('dark', 'ico-moon', '深色') + '</div>';
+}
+
+function loginSceneHtml() {
+  return '<svg class="login-scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">'
+    + '<defs><linearGradient id="loginSky" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0" stop-color="var(--login-sky-top)"/><stop offset="1" stop-color="var(--login-sky-bot)"/></linearGradient></defs>'
+    + '<rect width="1600" height="900" fill="url(#loginSky)"/>'
+    + '<circle cx="1180" cy="140" r="280" fill="var(--login-far)"/>'
+    + '<circle cx="220" cy="640" r="210" fill="var(--login-build-3)"/>'
+    + '<circle cx="1420" cy="560" r="170" fill="var(--login-build)"/>'
+    + '<circle cx="780" cy="720" r="130" fill="var(--login-build-2)"/>'
+    + '<circle cx="430" cy="180" r="90" fill="var(--login-build)"/>'
+    + '<circle cx="980" cy="480" r="70" fill="var(--login-build-3)"/>'
+    + '<circle cx="80" cy="280" r="48" fill="var(--login-far)"/>'
+    + '<circle cx="1540" cy="220" r="36" fill="var(--login-build-2)"/>'
+    + '<circle cx="620" cy="80" r="28" fill="var(--login-build-3)"/>'
+    + '<circle cx="1320" cy="800" r="110" fill="var(--login-far)"/>'
+    + '</svg>';
 }
 
 function loadTheme() {
@@ -833,7 +852,7 @@ function renderLogin() {
   wrap.className = 'login-wrap';
   wrap.innerHTML = themeSegHtml()
     + '<div class="login-brand"><span class="login-watermark" aria-hidden="true">会</span><div class="brand-mark">会</div><h1>会议室预约</h1><p>内部管理系统</p></div>'
-    + '<div class="login-main"><div class="login-card"><h2>欢迎回来</h2><form id="loginForm">'
+    + '<div class="login-main">' + loginSceneHtml() + '<div class="login-card"><h2>欢迎回来</h2><form id="loginForm">'
     + '<label>账号<input type="text" class="field" name="user" required placeholder="任意账号" /></label>'
     + '<label>密码<input type="password" class="field" name="pwd" required placeholder="任意密码" /></label>'
     + '<button type="submit" class="btn primary">登录</button></form></div></div>';

@@ -44,10 +44,16 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--muted-soft` | `#f2f4f7` | 中性胶囊底 |
 | `--shadow-1` | `0 1px 2px rgba(16,24,40,.04), 0 1px 3px rgba(16,24,40,.06)` | 卡片（轻） |
 | `--shadow-2` | `0 12px 32px rgba(16,24,40,.12)` | 抽屉 / toast（浮层） |
-| `--login-scrim` | `transparent` | 无图不遮；用户图改成 `rgba(240,242,245,.48)` |
-| `--login-photo` | `none` | 登录右栏默认空底（`--bg-page`）。用户图改成 `url("相对路径或 https")`，并加深 `--login-scrim`。size/repeat/pos 默认已是 `cover` / `no-repeat` / `center` |
+| `--login-scrim` | `rgba(240,242,245,.28)` | 登录插画上的淡罩；用户实拍改成 `.48` |
+| `--login-photo` | `none` | 默认不铺照片。用户图改成 `url("相对路径或 https")`，并设 `--login-scene: 0`、加深 `--login-scrim` |
+| `--login-sky-top` / `--login-sky-bot` | `#eef1fc` / `#dce3f0` | 登录校园插画天空 |
+| `--login-far` | `#d2dae8` | 远景楼 |
+| `--login-build` / `-2` / `-3` | `#c4cde0` / `#c0cadc` / `#c8d2e4` | 近景楼体块（贴近天空，不要抢卡片） |
+| `--login-ground` / `--login-street` | `#d4dce8` / `#ccd6e4` | 地面 / 路沿 |
+| `--login-win` | `rgba(26,29,36,.08)` | 窗格 |
+| `--login-win-lit` | `transparent` | 浅色不亮窗；深色用暖色点窗 |
 
-浅色侧栏是白底深字：文字走 `--text-on-sidebar` / `--text-on-sidebar-strong`，不要用 `--text-on-primary` 写菜单。侧栏与内容区用右侧 `inset` `--border` 分界，不要再画深墨墙。登录左栏同样走 `--bg-sidebar`，**垂直居中**，标题 `--fs-brand` + `--text-on-sidebar-strong`，副标题 `--fs-title`，背后一颗 `.login-watermark`（`--login-wash`、透明度 `.06`）。右栏默认 `--bg-page`（`--login-photo: none`），有图才铺 `--login-photo` 并叠 `--login-scrim`，卡片浮在上面。用户给了图：替换 `--login-photo` 为 `url(...)`，并加深 `--login-scrim`。`html` 要写 `color-scheme: light` / `dark`，免得原生滚动条和日期控件漏浅色。
+浅色侧栏是白底深字：文字走 `--text-on-sidebar` / `--text-on-sidebar-strong`，不要用 `--text-on-primary` 写菜单。侧栏与内容区用右侧 `inset` `--border` 分界，不要再画深墨墙。登录左栏同样走 `--bg-sidebar`，**垂直居中**，标题 `--fs-brand` + `--text-on-sidebar-strong`，副标题 `--fs-title`，背后一颗 `.login-watermark`（`--login-wash`、透明度 `.06`）。右栏默认内联淡圆（`.login-scene`），上叠 `--login-scrim`，卡片浮在上面。用户给了图：`--login-photo: url(...)`、`--login-scene: 0`，并加深 `--login-scrim`。`html` 要写 `color-scheme: light` / `dark`，免得原生滚动条和日期控件漏浅色。
 
 ## 深色
 
@@ -87,8 +93,14 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--muted-soft` | `rgba(107,119,133,.22)` | 中性胶囊底 |
 | `--shadow-1` | `0 1px 2px rgba(0,0,0,.28)` | 卡片（轻） |
 | `--shadow-2` | `0 12px 32px rgba(0,0,0,.36)` | 抽屉 / toast |
-| `--login-scrim` | `transparent` | 无图不遮；用户图改成 `rgba(13,17,23,.55)` |
-| `--login-photo` | `none` | 登录右栏默认空底；用户图覆盖时加强遮罩 |
+| `--login-scrim` | `rgba(13,17,23,.4)` | 登录插画上的淡罩；用户实拍改成 `.55` |
+| `--login-photo` | `none` | 默认不铺照片；用户图覆盖时 `--login-scene: 0` 并加强遮罩 |
+| `--login-sky-top` / `--login-sky-bot` | `#161d2a` / `#10161f` | 登录校园插画天空 |
+| `--login-far` | `#1a2432` | 远景楼 |
+| `--login-build` / `-2` / `-3` | `#1e2838` / `#222e40` / `#1a2434` | 近景楼体块 |
+| `--login-ground` / `--login-street` | `#121820` / `#0f141c` | 地面 / 路沿 |
+| `--login-win` | `rgba(232,237,244,.04)` | 窗格 |
+| `--login-win-lit` | `rgba(247,178,103,.28)` | 少量亮窗 |
 
 深色下 `.drawer`、下拉、toast 必须用 `--bg-card` + `--text-1`，禁止残留浅色白底。`html[data-theme="dark"]` 必须设 `color-scheme: dark`，原生滚动条 / `select` / 日期控件才跟壳走。
 
@@ -142,6 +154,7 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 | `--modal-w` | `420px` | 确认弹窗宽度 |
 | `--login-mark` | `48px` | 登录页左栏方标 |
 | `--login-wash` | `240px` | 登录左栏水印字 |
+| `--login-scene` | `.5` | 默认半透明校园插画；用户图改 `0` |
 | `--login-photo-size` | `cover` | 用户图铺满右栏 |
 | `--login-photo-repeat` | `no-repeat` | 用户图不平铺 |
 | `--login-photo-pos` | `center` | 用户图居中 |
@@ -170,7 +183,7 @@ CSS：`html[data-theme="light"|"dark"]` 下定义同名变量。默认 `light`�
 - **页标题**：内容区 `.page-head h1` 用 `--fs-page`，不要和抽屉标题抢同一个 16px。
 - **筛选条**：筛选项和「查询 / 重置」左对齐挨在一起。禁止 `.spacer { flex:1 }` 把按钮甩到最右。
 - **演示角色**：`.demo-role` 矮一档、标「演示」，不要做成和用户区同级的正式下拉。
-- **登录页**：左品牌带加大字号、垂直居中 + 淡水印方标；右栏默认空底（`--bg-page`），用户提供图时写入 `--login-photo` 并加强 `--login-scrim`。登录卡片标题写「欢迎回来」。禁止营销大图当默认、禁止玻璃拟态、禁止假建筑剪影、禁止光晕/点阵/折角装饰底。
+- **登录页**：左品牌带加大字号、垂直居中 + 淡水印方标；右栏默认内联大小不一的淡圆（`.login-scene`），用户提供图时写入 `--login-photo`、`--login-scene: 0` 并加强 `--login-scrim`。登录卡片标题写「欢迎回来」。禁止营销网图当默认、禁止玻璃拟态、禁止光晕/点阵/折角/楼宇装饰底。禁止把插画塞进 CSS `background-image` 的 SVG data-URI（`url(#id)` 不绘制）。
 - **空态**：三段式文案上方一颗 `--empty-ico` 线性图标，不要插画。
 - **工作台数字卡**：`.stat-row` 设 `--stat-max`，不要在超宽屏拉满。
 - 禁止 `backdrop-filter` 玻璃、禁止营销大留白、禁止 `#00fffc`、禁止 `#2f6fed`。

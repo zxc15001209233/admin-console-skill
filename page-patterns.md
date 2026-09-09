@@ -20,7 +20,7 @@
 
 | 积木 | 何时用 | 形态 |
 |---|---|---|
-| 登录壳 | 需求有登录 | 左品牌带（`--fs-brand`，垂直居中 + `.login-watermark`）+ 右卡片叠在 `--bg-page` 上（有图才铺 `--login-photo`）；`#/login`；**右上角 `.theme-seg`** 太阳/月亮。用户图写入 `--login-photo` 并加强 `--login-scrim`。卡片标题「欢迎回来」。忘记密码页同样要有主题开关 |
+| 登录壳 | 需求有登录 | 左品牌带（`--fs-brand`，垂直居中 + `.login-watermark`）+ 右卡片叠在淡圆插画（`.login-scene`）上；`#/login`；**右上角 `.theme-seg`** 太阳/月亮。用户图写入 `--login-photo` 并 `--login-scene: 0`。卡片标题「欢迎回来」。忘记密码页同样要有主题开关 |
 | 404 | 未知 hash | `.empty`「页面不存在」+ 返回首页。禁止静默跳到默认页 |
 | 表头排序 | 需求有排序 | `th.sortable` + `data-sort`，写入 hash `sort`/`dir` |
 | 下拉多选筛 | 标签/楼层等多值 | `.multi-select`，选中值写入 hash |
@@ -179,7 +179,7 @@ currentUser: { name: '张伟', username: 'zhangwei', role: 'staff', roleLabel: '
 
 登录页和忘记密码页必须在 **`.login-wrap` 右上角**放 `.theme-seg`（太阳 / 月亮，`aria-label` 浅色 / 深色），与顶栏共用 `applyTheme` + `admin-theme:<产品名>`。壳顶栏的开关在登录时被藏掉，禁止只靠那一颗。用 `themeSegHtml()` 拼进登录/忘记密码 markup，点 `[data-theme-set]` 走同一套 `applyTheme`（同步所有开关的 `.active`）。
 
-右栏 `.login-main` 默认 `--bg-page`（`--login-photo: none`）。有图时铺 `--login-photo`，上面叠 `--login-scrim`，卡片 `z-index` 压住遮罩。禁止默认光晕、点阵、折角、假建筑剪影、营销大图。确认单或入口③给了图，把 `--login-photo` 改成 `url("相对路径")` 或 `url("https://...")`，并把 `--login-scrim` 加深（浅 `.48` / 深 `.55`）。左栏不放照片，**垂直居中**，方标字做 `.login-watermark`。登录卡片标题用「欢迎回来」，按钮仍写「登录」。
+右栏 `.login-main` 默认内联 SVG（`loginSceneHtml()` → `.login-scene`）：淡天空 + 大小不一的圆。上面叠 `--login-scrim`（浅 `.28` / 深 `.4`），`.login-scene` 默认透明度 `--login-scene: .5`，卡片 `z-index` 压住。**必须内联**，禁止 CSS `background-image` 的 SVG data-URI。确认单或入口③给了图，把 `--login-photo` 改成 `url(...)`，`--login-scene: 0`，并把 `--login-scrim` 加深（浅 `.48` / 深 `.55`）。左栏不放照片，**垂直居中**，方标字做 `.login-watermark`。登录卡片标题用「欢迎回来」，按钮仍写「登录」。禁止光晕点阵折角、禁止营销网图当默认。
 
 ## 404
 

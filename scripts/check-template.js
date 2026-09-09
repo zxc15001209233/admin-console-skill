@@ -91,9 +91,13 @@ if (hasLogin) {
   must(/pendingHash\s*=\s*['"]{2}/.test(scripts), 'logout must clear pendingHash (do not restore previous page)');
   must(/function themeSegHtml/.test(scripts), 'login/forgot must render .theme-seg via themeSegHtml (shell toggle is hidden on login)');
   must(html.includes('--login-photo') && html.includes('--login-scrim'), 'login right pane needs --login-photo + --login-scrim');
-  must(/--login-photo:\s*none/.test(html), 'login default right pane must be empty (--login-photo:none), not glow/grid/corners');
+  must(/function loginSceneHtml/.test(scripts) && html.includes('login-scene'), 'login default needs inline .login-scene via loginSceneHtml');
+  must(/<circle cx=/.test(scripts), 'login scene default must be varied circles, not a building grid');
+  must(html.includes('--login-sky-top') && html.includes('--login-build'), 'login scene colors must be tokens');
+  must(html.includes('--login-scene'), 'login scene visibility must use --login-scene (0 when user photo)');
+  must(/--login-photo:\s*none/.test(html), 'default --login-photo stays none; illustration is inline SVG not a data-URI background');
   must(html.includes('--login-photo-size') && html.includes('--login-photo-repeat') && html.includes('--login-photo-pos'), 'login photo override needs size/repeat/pos tokens');
-  must(!html.includes('--login-glow') && !html.includes('--login-line') && !html.includes('--login-corner') && !html.includes('--login-dot-color'), 'login must not ship glow/line/dot deco tokens');
+  must(!html.includes('--login-glow') && !html.includes('--login-dot-color'), 'login must not ship glow/dot deco tokens');
   must(!/--login-photo:[^;]*data:image/.test(html), 'login --login-photo must not be an SVG data-URI');
   must(/\.login-main::before/.test(styles), 'login photo needs ::before scrim so the card stays readable');
   must(html.includes('--login-mark'), 'login brand mark must use --login-mark');

@@ -93,7 +93,7 @@ Step 1 识别入口与启动路径 → Step 2 方案确认单 → Step 3 默认�
 - 色值只取自 [themes.md](themes.md) 的 token 表（精工脸，禁止 `#2f6fed`）
 - 管理页之间用 hash 路由（`#/rooms`、`#/rooms/new`），刷新停留当前页
 - 列表的筛选 / 分页 / 树选中写入 hash query（`#/rooms?q=一号&page=2`），刷新不丢
-- 登录页（需求有登录时）：无侧栏；**右上角太阳/月亮开关**；右栏默认空底，用户有图则写入 `--login-photo`；未登录深链须回登录页，登录成功后回跳原 hash（含 query）。退出登录清 `pendingHash`，**不**回跳退出前的页
+- 登录页（需求有登录时）：无侧栏；**右上角太阳/月亮开关**；右栏默认淡圆插画，用户有图则写入 `--login-photo` 并关掉 `--login-scene`；未登录深链须回登录页，登录成功后回跳原 hash（含 query）。退出登录清 `pendingHash`，**不**回跳退出前的页
 - 未知 hash：已登录渲染「页面不存在」，禁止静默跳首页
 - 有登录时：顶栏头像菜单；个人中心用独立 `#profileDrawer`，禁止复用业务 `#drawer`
 - 删除 / 解锁等破坏性操作：用 `#modal` 确认，禁止 `window.confirm`
@@ -169,7 +169,7 @@ Step 5 **不能代替 Step 5.5**。禁止把自检勾选复述成「已完成」
 关键字段：
 交互：
 主题：浅色（默认）
-登录右栏图：默认空底 | 用户提供（写入 --login-photo，加深 --login-scrim）
+登录右栏图：默认淡圆插画 | 用户提供（写入 --login-photo，--login-scene:0，加深 --login-scrim）
 演示角色：无 | 有（列出）
 缺失项：
 疑点清单：
