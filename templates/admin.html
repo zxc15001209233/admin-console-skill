@@ -239,6 +239,18 @@
   .pager .page-btn:disabled { color:var(--text-3); cursor:not-allowed; }
   .pager .page-btn.active { background:var(--color-primary-soft); color:var(--color-primary); font-weight:600; }
 
+  /* 树+表范围条（按需）：标签与值同一行，靠左，超出换行，不均分 */
+  .scope-bar {
+    display:flex; flex-wrap:wrap; justify-content:flex-start; gap:var(--sp-3) var(--sp-6);
+    margin-bottom:var(--sp-3); padding:var(--sp-3) var(--sp-4);
+    background:var(--bg-card); border-radius:var(--radius); box-shadow:var(--shadow-1);
+  }
+  .scope-item {
+    flex:0 0 auto; display:flex; align-items:baseline; gap:var(--sp-2);
+  }
+  .scope-bar .k { flex-shrink:0; color:var(--text-3); font-size:var(--fs-label); }
+  .scope-bar .v { font-weight:600; white-space:nowrap; }
+
   /* 抽屉 */
   .drawer-mask {
     position:fixed; inset:0; z-index:100; background:var(--bg-overlay);
