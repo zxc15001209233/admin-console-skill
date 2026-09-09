@@ -44,6 +44,15 @@
             <el-option label="员工" value="staff" />
             <el-option label="管理员" value="admin" />
           </el-select>
+          <el-dropdown trigger="click">
+            <span class="admin-shell__user">演示用户</span>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item>个人中心</el-dropdown-item>
+                <el-dropdown-item divided>退出登录</el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </el-header>
         <el-main class="admin-shell__main">
           <router-view />

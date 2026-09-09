@@ -137,7 +137,26 @@
   }
   .theme-seg button:hover { color:var(--text-1); }
   .theme-seg button.active { background:var(--bg-card); color:var(--text-1); box-shadow:var(--shadow-1); }
-  .user-area { display:flex; align-items:center; gap:var(--sp-2); color:var(--text-2); }
+  .user-menu { position:relative; }
+  .user-area {
+    display:flex; align-items:center; gap:var(--sp-2); color:var(--text-2);
+    border:0; background:transparent; padding:var(--sp-1) var(--sp-2); border-radius:var(--radius-sm);
+    transition:background var(--dur) var(--ease);
+  }
+  .user-area:hover { background:var(--bg-hover); color:var(--text-1); }
+  .user-dropdown {
+    display:none; position:absolute; right:0; top:calc(100% + var(--sp-1)); z-index:30;
+    min-width:160px; padding:var(--sp-1); background:var(--bg-card); color:var(--text-1);
+    border-radius:var(--radius); box-shadow:var(--shadow-2);
+  }
+  .user-dropdown.open { display:block; }
+  .user-drop-item {
+    display:block; width:100%; border:0; background:transparent; color:var(--text-1);
+    text-align:left; padding:var(--sp-2) var(--sp-3); border-radius:var(--radius-sm);
+    transition:background var(--dur) var(--ease);
+  }
+  .user-drop-item:hover { background:var(--bg-hover); }
+  .user-drop-item.danger { color:var(--danger); }
   .user-avatar {
     width:28px; height:28px; border-radius:50%;
     background:var(--color-primary-soft); color:var(--color-primary);
@@ -352,9 +371,15 @@
           <option value="staff">员工</option>
           <option value="admin">管理员</option>
         </select>
-        <div class="user-area" title="演示身份">
-          <span class="user-avatar">演</span>
-          <span class="user-name">演示用户</span>
+        <div class="user-menu" id="userMenu">
+          <button type="button" class="user-area" id="userMenuBtn" aria-haspopup="true" aria-expanded="false">
+            <span class="user-avatar" id="userAvatar">演</span>
+            <span class="user-name" id="userName">演示用户</span>
+          </button>
+          <div class="user-dropdown" id="userDropdown">
+            <button type="button" class="user-drop-item" id="btnProfile">个人中心</button>
+            <button type="button" class="user-drop-item danger" id="btnLogout">退出登录</button>
+          </div>
         </div>
       </div>
     </header>
@@ -390,7 +415,9 @@ const THEME_KEY = 'admin-theme:会议室预约';
 const AUTH_KEY = 'admin-auth:会议室预约';
 const PAGE_SIZE = 10;
 
-const MOCK = { rooms: [
+const MOCK = {
+  currentUser: { name: '演示用户', username: 'demo' },
+  rooms: [
   { id: 1, name: '一号会议室', floor: '3F', capacity: 8 },
   { id: 2, name: '董事会会议室', floor: '5F', capacity: 20 }
 ]};
@@ -497,10 +524,13 @@ function bindPager(root, rerender) {
 
 function setDrawerMode(mode) {
   drawerMode = mode;
-  const isView = mode === 'view';
-  roomForm.classList.toggle('hidden', isView);
-  $('#drawerView').classList.toggle('hidden', !isView);
-  $('#drawerViewActions').classList.toggle('hidden', !isView);
+  const showView = mode === 'view' || mode === 'profile';
+  roomForm.classList.toggle('hidden', showView);
+  $('#drawerView').classList.toggle('hidden', !showView);
+  $('#drawerViewActions').classList.toggle('hidden', !showView);
+  const isProfile = mode === 'profile';
+  $('#viewEdit').classList.toggle('hidden', isProfile);
+  $('#viewDel').classList.toggle('hidden', isProfile);
 }
 
 function fillView(r) {
@@ -563,6 +593,8 @@ function renderLogin() {
   wrap.querySelector('#loginForm').addEventListener('submit', (e) => {
     e.preventDefault();
     sessionStorage.setItem(AUTH_KEY, '1');
+    const user = String(new FormData(e.target).get('user') || '').trim();
+    if (user) MOCK.currentUser.username = user;
     wrap.remove();
     const target = pendingHash || '#/rooms';
     pendingHash = '';
@@ -634,6 +666,33 @@ function renderRooms() {
   });
 }
 
+function closeUserMenu() {
+  $('#userDropdown').classList.remove('open');
+  $('#userMenuBtn').setAttribute('aria-expanded', 'false');
+}
+
+function openProfile() {
+  closeUserMenu();
+  $('#drawerTitle').textContent = '个人中心';
+  const roleText = roleSel.options[roleSel.selectedIndex].text;
+  const rows = [
+    ['姓名', MOCK.currentUser.name],
+    ['账号', MOCK.currentUser.username],
+    ['角色', roleText]
+  ].map(([k, v]) => '<div class="desc-row"><div class="k">' + esc(k) + '</div><div class="v">' + esc(v) + '</div></div>').join('');
+  $('#drawerView').innerHTML = '<div class="desc-list">' + rows + '</div>';
+  setDrawerMode('profile');
+  drawer.classList.add('open');
+}
+
+function logout() {
+  closeUserMenu();
+  closeDrawer();
+  sessionStorage.removeItem(AUTH_KEY);
+  pendingHash = '';
+  navigate('#/login');
+}
+
 function route() {
   const r = getRoute();
   if (r === 'login') { renderLogin(); return; }
@@ -651,6 +710,17 @@ document.querySelectorAll('#themeSeg [data-theme-set]').forEach((btn) => {
   btn.addEventListener('click', () => applyTheme(btn.getAttribute('data-theme-set')));
 });
 roleSel.addEventListener('change', () => applyRole(roleSel.value));
+$('#userMenuBtn').addEventListener('click', (e) => {
+  e.stopPropagation();
+  const open = !$('#userDropdown').classList.contains('open');
+  $('#userDropdown').classList.toggle('open', open);
+  $('#userMenuBtn').setAttribute('aria-expanded', open ? 'true' : 'false');
+});
+$('#userDropdown').addEventListener('click', (e) => e.stopPropagation());
+$('#btnProfile').addEventListener('click', openProfile);
+$('#btnLogout').addEventListener('click', logout);
+document.addEventListener('click', closeUserMenu);
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeUserMenu(); });
 $('#sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
 $('#navBizToggle').addEventListener('click', () => $('#navBiz').classList.toggle('collapsed'));
 $('#navScreenToggle').addEventListener('click', () => $('#navScreen').classList.toggle('collapsed'));
