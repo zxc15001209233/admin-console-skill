@@ -67,6 +67,17 @@
 - SVG 图标有 `viewBox="0 0 24 24"`，尺寸走 `--ico`
 禁止借口：「不承诺 1:1 所以用 EP 默认」「element-theme 只映射 token，控件态现写」「大屏已经有 element-dark，管理页共用即可」。
 
+## P16 多页签：顶栏下可关、可配缓存，两条线都在
+提示：生成带至少两个叶子菜单的管理 HTML。登录后点侧栏打开第二页，再点回第一页。
+期望：
+- 页签在**顶栏正下方**，不在侧栏里；首页（工作台或第一个业务页）没有 ×；其它页有 ×，关掉当前页切到相邻页签
+- 登录 / 忘记密码看不到页签；退出登录后再进，先前打开的页签清空
+- 列表默认 `cache: true`：筛选项输入后不点查询、切到另一页再回来，输入还在。表单页 `cache: false`
+- 顶栏与页签之间、页签与内容之间**各一条**分割线，禁止删中间那条
+- 选中页签不铺 `--bg-page`、不做圆角卡片，只用底部 `--accent-bar` 主色细条
+- 内容区没有与页签重复的 `.page-head h1`；「新建」在筛选条里
+禁止：「页签做在侧栏」「选中铺灰底显得像文件夹」「中间那条线多余就删了」「内容区再写一遍大标题」。
+
 ## 静态对照（实现后）
 - P1：SKILL 混合文档只做管理页 — `SKILL.md` 混合文档条
 - P2：确认单未发出不得写 — `SKILL.md` 工作流程
@@ -83,3 +94,4 @@
 - P13：登录 `.theme-seg` — `page-patterns.md` 登录壳；checker 查 `themeSegHtml`
 - P14：`renderNotFound` — `page-patterns.md` 404
 - P15：转 Vue 拷贝 `element-theme.less` + `admin-root` 隔离 — `vue-bridge.md`；`templates/element-theme.less` 控件态；`requirements-to-dev` 实现基座
+- P16：多页签 — `layout-patterns.md` 壳；`page-patterns.md` 列表；`themes.md` 页名/页签；`vue-bridge.md` keep-alive；checker 查 `#tabs` / `TAB_META` / `resetTabs` / `.tab.active::after`

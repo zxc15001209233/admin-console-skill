@@ -75,6 +75,12 @@ must(/hashchange|location\.hash/.test(html), 'missing hash router');
 must(html.includes('USE_MOCK'), 'missing USE_MOCK');
 must(/\[data-theme=["']dark["']\]/.test(html), 'missing dark theme block');
 must(html.includes('sidebar') || html.includes('aside'), 'missing sidebar');
+must(/id=["']tabs["']/.test(html) && /id=["']tabPanes["']/.test(html), 'shell needs #tabs under topbar and #tabPanes');
+must(/TAB_META/.test(scripts) && /TAB_HOME/.test(scripts), 'tabs need TAB_META + TAB_HOME');
+must(/function beginPage/.test(scripts) && /function resetTabs/.test(scripts) && /function closeTab/.test(scripts), 'tabs need beginPage / resetTabs / closeTab');
+must(/\.tab\.active::after/.test(styles), 'active tab uses --accent-bar underline, not gray fill');
+must(!/\.tab\.active\s*\{[^}]*--bg-page/.test(styles), 'active tab must not fill --bg-page');
+must(!/page-head"><h1/.test(scripts), 'do not repeat .page-head h1 under tabs; put 新建 in the filter bar');
 
 if (hasBizCrud) {
   must(/id=["']drawer["']/.test(html), 'CRUD pages need business #drawer');
@@ -90,6 +96,7 @@ if (hasLogin) {
   must(/function openProfile/.test(html) && /profileDrawer/.test(scripts), 'openProfile must target #profileDrawer');
   must(/pendingHash\s*=\s*['"]{2}/.test(scripts), 'logout must clear pendingHash (do not restore previous page)');
   must(/function themeSegHtml/.test(scripts), 'login/forgot must render .theme-seg via themeSegHtml (shell toggle is hidden on login)');
+  must(/resetTabs\(/.test(scripts), 'login/logout must resetTabs');
   must(html.includes('--login-photo') && html.includes('--login-scrim'), 'login right pane needs --login-photo + --login-scrim');
   must(/function loginSceneHtml/.test(scripts) && html.includes('login-scene'), 'login default needs inline .login-scene via loginSceneHtml');
   must(/<circle cx=/.test(scripts), 'login scene default must be varied circles, not a building grid');

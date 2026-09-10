@@ -34,6 +34,17 @@ HTML 用自建 `.field`；Vue 必须换 Element Plus。布局/菜单/字段跟 H
 
 禁止：`.admin-root :focus-visible { box-shadow: … }` 不排除 `.el-input__inner`。
 
+## 多页签
+
+对照 HTML 的 `TAB_META` / `beginPage` / `resetTabs`：
+
+- 页签画在顶栏正下方，不在侧栏。首页（工作台或第一个业务页）不可关；其余可关，关掉当前则 `router.push` 相邻页签。
+- 登录 / 忘记密码不在壳内，也就没有页签。退出登录清空 `openTabs`，不要回跳退出前的页。
+- 路由 `meta.title` 作页签文案；`meta.keepAlive` 默认列表 `true`、表单/向导 `false`。`keep-alive` 的 `include` 只收仍打开且 `keepAlive` 的组件 `name`（须与 `route.name` 一致）。关页签后该页不得再被缓存。
+- 顶栏 `justify-content: space-between`：左侧仍是面包屑（产品名 / 当前页），不要只留右侧。
+- 顶栏与页签、页签与内容各一条 `inset 0 -1px 0 var(--border)`。选中页签：透明底 + `--accent-bar` 主色底边，禁止铺 `--bg-page`、禁止圆角卡片。
+- 页面组件不要再写与页签重复的 `h1`；「新建」放筛选条。
+
 ## 自测（中后台基座完成口径）
 
-浅色/深色各走一遍：登录聚焦、筛选 input/select 聚焦与 hover、下拉/抽屉/确认框字色、表头、登录标签在上且与按钮同高。与大屏同仓时再打开 `/` 确认大屏输入仍是大屏脸。
+浅色/深色各走一遍：登录聚焦、筛选 input/select 聚焦与 hover、下拉/抽屉/确认框字色、表头、登录标签在上且与按钮同高。点两个菜单确认页签在顶栏下、首页不可关、选中不铺灰底、两条分割线都在。与大屏同仓时再打开 `/` 确认大屏输入仍是大屏脸。

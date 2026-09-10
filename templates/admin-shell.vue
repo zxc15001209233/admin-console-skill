@@ -5,7 +5,7 @@
   删除确认用 el-dialog，禁止 window.confirm
   大屏入口：菜单用 a[href="screen.html"] 整页跳转，禁止 iframe 嵌入 router-view
   登录/忘记密码不在本壳内，但仍须包 .admin-root，el-form label-position="top"
-  对照 vue-bridge.md：整份拷贝 element-theme.less
+  对照 vue-bridge.md：整份拷贝 element-theme.less；页签在顶栏下，keep-alive 跟 meta.keepAlive
 -->
 <template>
   <el-config-provider :locale="zhCn">
@@ -37,9 +37,11 @@
           </a>
         </nav>
       </el-aside>
-      <el-container>
+      <el-container class="admin-shell__body" direction="vertical">
         <el-header height="56px" class="admin-shell__header">
           <!-- 登录页不在本壳内：登录/忘记密码须自带 theme-seg，键仍 admin-theme:产品名 -->
+          <nav class="admin-shell__crumb">{{ productName }} / <strong>{{ currentTabTitle }}</strong></nav>
+          <div class="admin-shell__header-actions">
           <el-radio-group :model-value="theme" size="small" @change="applyTheme">
             <el-radio-button value="light" aria-label="浅色" title="浅色">
               <svg class="theme-ico" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 3v1.5M12 19.5V21M4.93 4.93l1.06 1.06M17.99 17.99l1.06 1.06M3 12h1.5M19.5 12H21M4.93 19.07l1.06-1.06M17.99 6.01l1.06-1.06"/></svg>
@@ -65,9 +67,31 @@
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          </div>
         </el-header>
+        <div v-show="openTabs.length" class="admin-shell__tabs">
+          <div
+            v-for="tab in openTabs"
+            :key="tab.path"
+            class="admin-shell__tab"
+            :class="{ active: tab.path === route.path }"
+          >
+            <router-link class="admin-shell__tab-hit" :to="tab.fullPath">{{ tab.title }}</router-link>
+            <button
+              v-if="tab.closable"
+              type="button"
+              class="admin-shell__tab-close"
+              :aria-label="'关闭' + tab.title"
+              @click.prevent="closeTab(tab)"
+            >×</button>
+          </div>
+        </div>
         <el-main class="admin-shell__main">
-          <router-view />
+          <router-view v-slot="{ Component }">
+            <keep-alive :include="cachedNames">
+              <component :is="Component" :key="route.name" />
+            </keep-alive>
+          </router-view>
           <!-- 列表筛选项应写进路由 query，刷新可复现 -->
         </el-main>
       </el-container>
@@ -92,15 +116,72 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 
 /** 拷贝后替换为实际产品名，用于 localStorage 键 admin-theme:<产品名> */
 const productName = ref('产品名')
 const themeStorageKey = computed(() => `admin-theme:${productName.value}`)
+const HOME_PATH = '/example'
+
+type ShellTab = {
+  path: string
+  fullPath: string
+  title: string
+  name: string
+  closable: boolean
+  keepAlive: boolean
+}
+
+const route = useRoute()
+const router = useRouter()
+const openTabs = ref<ShellTab[]>([])
+const currentTabTitle = computed(() => {
+  const tab = openTabs.value.find((t) => t.path === route.path)
+  return tab?.title || String(route.meta.title || '')
+})
+const cachedNames = computed(() =>
+  openTabs.value.filter((t) => t.keepAlive && t.name).map((t) => t.name)
+)
+
+watch(
+  () => route.fullPath,
+  () => {
+    if (route.meta.public) return
+    const name = String(route.name || '')
+    const title = String(route.meta.title || name)
+    const keepAlive = route.meta.keepAlive !== false
+    const existed = openTabs.value.find((t) => t.path === route.path)
+    if (!existed) {
+      openTabs.value.push({
+        path: route.path,
+        fullPath: route.fullPath,
+        title,
+        name,
+        closable: route.path !== HOME_PATH && route.meta.closable !== false,
+        keepAlive,
+      })
+    } else {
+      existed.fullPath = route.fullPath
+      existed.title = title
+    }
+  },
+  { immediate: true }
+)
+
+function closeTab(tab: ShellTab) {
+  if (!tab.closable) return
+  const i = openTabs.value.findIndex((t) => t.path === tab.path)
+  if (i < 0) return
+  const neighbor = openTabs.value[i + 1] || openTabs.value[i - 1]
+  openTabs.value.splice(i, 1)
+  if (route.path === tab.path && neighbor) router.push(neighbor.fullPath)
+}
 
 const menuItems = ref([
   { path: '/example', label: '示例列表' },
 ])
+// 路由 meta.title = 页签文案；meta.keepAlive 列表默认 true、表单 false；页面组件 name 须与 route.name 一致才能进 keep-alive
 
 const screenHref = ref('screen.html')
 const screenLabel = ref('工业分析大屏')
@@ -125,6 +206,7 @@ function onUserCommand(cmd: string) {
   if (cmd === 'profile') profileOpen.value = true
   if (cmd === 'logout') {
     profileOpen.value = false
+    openTabs.value = []
     // 清登录态后 router.push('/login')，不要回跳退出前的页
   }
 }
@@ -240,14 +322,117 @@ if (saved === 'light' || saved === 'dark') {
   }
 }
 
+.admin-shell__body {
+  min-width: 0;
+  flex: 1;
+}
+
 .admin-shell__header {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: var(--sp-3);
   padding: 0 var(--sp-6);
   background: var(--bg-topbar);
   box-shadow: inset 0 -1px 0 var(--border);
+}
+
+.admin-shell__crumb {
+  color: var(--text-2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  strong {
+    color: var(--text-1);
+    font-weight: 600;
+  }
+}
+
+.admin-shell__header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  flex-shrink: 0;
+}
+
+.admin-shell__tabs {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sp-4);
+  min-height: var(--ctl-h);
+  flex-shrink: 0;
+  padding: 0 var(--sp-6);
+  background: var(--bg-topbar);
+  box-shadow: inset 0 -1px 0 var(--border);
+  overflow-x: auto;
+}
+
+.admin-shell__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  height: var(--ctl-h);
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  font-size: var(--fs-body);
+  white-space: nowrap;
+  flex-shrink: 0;
+  position: relative;
+
+  &:hover {
+    color: var(--text-1);
+    background: transparent;
+  }
+
+  &.active {
+    color: var(--text-1);
+    font-weight: 500;
+    background: transparent;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: var(--accent-bar);
+      background: var(--color-primary);
+      border-radius: var(--radius-pill);
+    }
+  }
+}
+
+.admin-shell__tab-hit {
+  color: inherit;
+  text-decoration: none;
+  font: inherit;
+  font-weight: inherit;
+}
+
+.admin-shell__tab-close {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-3);
+  width: var(--ctl-sm);
+  height: var(--ctl-sm);
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-title);
+  line-height: 1;
+
+  &:hover {
+    color: var(--text-1);
+    background: var(--bg-hover);
+  }
 }
 
 .theme-ico {
@@ -276,5 +461,7 @@ if (saved === 'light' || saved === 'dark') {
 .admin-shell__main {
   padding: var(--sp-5) var(--sp-6);
   background: var(--bg-page);
+  min-height: 0;
+  flex: 1;
 }
 </style>

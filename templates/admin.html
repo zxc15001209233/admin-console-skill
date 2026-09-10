@@ -133,6 +133,41 @@
   .breadcrumb { color:var(--text-2); min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .breadcrumb strong { color:var(--text-1); font-weight:600; }
   .topbar-actions { display:flex; align-items:center; gap:var(--sp-3); flex-shrink:0; }
+  .tabs {
+    display:flex; align-items:stretch; gap:var(--sp-4);
+    min-height:var(--ctl-h); flex-shrink:0;
+    padding:0 var(--sp-6);
+    background:var(--bg-topbar);
+    box-shadow:inset 0 -1px 0 var(--border);
+    overflow-x:auto;
+  }
+  .tabs[hidden] { display:none !important; }
+  .tab {
+    display:inline-flex; align-items:center; gap:var(--sp-1);
+    height:var(--ctl-h); padding:0;
+    border:0;
+    background:transparent; color:var(--text-2);
+    font-size:var(--fs-body); white-space:nowrap; flex-shrink:0;
+    position:relative;
+  }
+  .tab:hover { color:var(--text-1); background:transparent; }
+  .tab.active { color:var(--text-1); font-weight:500; background:transparent; }
+  .tab.active::after {
+    content:""; position:absolute; left:0; right:0; bottom:0;
+    height:var(--accent-bar); background:var(--color-primary); border-radius:var(--radius-pill);
+  }
+  .tab-hit {
+    appearance:none; border:0; background:transparent; color:inherit;
+    font:inherit; font-weight:inherit; padding:0; cursor:pointer;
+  }
+  .tab-close {
+    appearance:none; border:0; background:transparent; color:var(--text-3);
+    width:var(--ctl-sm); height:var(--ctl-sm); padding:0; cursor:pointer;
+    display:inline-flex; align-items:center; justify-content:center;
+    border-radius:var(--radius-sm); font-size:var(--fs-title); line-height:1;
+  }
+  .tab-close:hover { color:var(--text-1); background:var(--bg-hover); }
+  .tab-panes { flex:1; min-height:0; position:relative; }
   .demo-role {
     display:inline-flex; align-items:center; gap:var(--sp-1);
     height:var(--ctl-h); padding:0 var(--sp-2);
@@ -216,7 +251,9 @@
   .btn-link.danger { color:var(--danger); }
 
   /* 内容区 */
-  .content { flex:1; overflow:auto; padding:var(--sp-5) var(--sp-6); }
+  .content { height:100%; overflow:auto; padding:var(--sp-5) var(--sp-6); }
+  .tab-pane { display:none; }
+  .tab-pane.active { display:block; }
   .page-head { display:flex; align-items:center; justify-content:space-between; gap:var(--sp-3); margin-bottom:var(--sp-4); }
   .page-head h1 { margin:0; font-size:var(--fs-page); font-weight:600; }
   .page-head .actions { display:flex; gap:var(--sp-2); }
@@ -490,7 +527,8 @@
         </div>
       </div>
     </header>
-    <main class="content" id="view"></main>
+    <div class="tabs" id="tabs" hidden></div>
+    <div class="tab-panes" id="tabPanes"></div>
   </div>
 </div>
 <div class="drawer-mask" id="drawer">
@@ -565,15 +603,27 @@ let selectedIds = new Set();
 let modalOnOk = null;
 let pendingFileName = '';
 
+const TAB_HOME = 'rooms';
+const TAB_CRUMB = '会议室预约';
+const TAB_META = {
+  rooms: { title: '会议室一览', cache: true, closable: false },
+  unknown: { title: '页面不存在', cache: false, closable: true }
+};
+// 每增一个叶子菜单：TAB_META 加一项。列表 cache true，表单 false。首页 TAB_HOME 不可关。
+
 const $ = (sel) => document.querySelector(sel);
 const shell = $('#shell');
-const view = $('#view');
+const tabsEl = $('#tabs');
+const tabPanes = $('#tabPanes');
 const drawer = $('#drawer');
 const toast = $('#toast');
 const roleSel = $('#roleSel');
 const roomForm = $('#roomForm');
 const sidebar = $('#sidebar');
 const breadcrumb = $('#breadcrumb');
+let view = null;
+let openTabs = [];
+let activeTabKey = '';
 
 function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -647,6 +697,93 @@ function setActiveNav(route) {
   });
 }
 
+function tabKeyOf(r) {
+  return r.name === 'unknown' ? 'unknown' : r.name;
+}
+
+function tabMetaOf(r) {
+  return TAB_META[tabKeyOf(r)] || TAB_META.unknown;
+}
+
+function paneOf(key) {
+  return [...tabPanes.children].find((p) => p.getAttribute('data-key') === key) || null;
+}
+
+function paintTabs() {
+  if (!openTabs.length) {
+    tabsEl.hidden = true;
+    tabsEl.innerHTML = '';
+    return;
+  }
+  tabsEl.hidden = false;
+  tabsEl.innerHTML = openTabs.map((t) => {
+    const close = t.closable
+      ? '<button type="button" class="tab-close" data-close="' + esc(t.key) + '" aria-label="关闭' + esc(t.title) + '">×</button>'
+      : '';
+    return '<div class="tab' + (t.key === activeTabKey ? ' active' : '') + '">'
+      + '<button type="button" class="tab-hit" data-tab="' + esc(t.key) + '">' + esc(t.title) + '</button>'
+      + close + '</div>';
+  }).join('');
+}
+
+function activatePane(key) {
+  [...tabPanes.children].forEach((p) => p.classList.toggle('active', p.getAttribute('data-key') === key));
+  view = paneOf(key);
+}
+
+function resetTabs() {
+  openTabs = [];
+  activeTabKey = '';
+  tabPanes.innerHTML = '';
+  paintTabs();
+  view = null;
+}
+
+function beginPage(r, force) {
+  shell.classList.remove('hidden');
+  document.querySelectorAll('.login-wrap').forEach((el) => el.remove());
+  const key = tabKeyOf(r);
+  const meta = tabMetaOf(r);
+  const existed = openTabs.some((t) => t.key === key);
+  const sameTab = existed && activeTabKey === key;
+  if (!existed) {
+    openTabs.push({
+      key: key,
+      title: meta.title,
+      cache: meta.cache,
+      closable: meta.closable !== false && key !== TAB_HOME,
+      hash: location.hash
+    });
+    const pane = document.createElement('main');
+    pane.className = 'content tab-pane';
+    pane.setAttribute('data-key', key);
+    tabPanes.appendChild(pane);
+  } else {
+    const tab = openTabs.find((t) => t.key === key);
+    tab.hash = location.hash;
+    tab.title = meta.title;
+  }
+  const reuse = meta.cache && existed && !sameTab && !force && paneOf(key) && paneOf(key).dataset.ready === '1';
+  activeTabKey = key;
+  activatePane(key);
+  paintTabs();
+  setBreadcrumb(meta.title);
+  setActiveNav(r.name === 'unknown' ? '' : r.name);
+  return !reuse;
+}
+
+function closeTab(key) {
+  const i = openTabs.findIndex((t) => t.key === key);
+  if (i < 0 || !openTabs[i].closable) return;
+  const wasActive = activeTabKey === key;
+  const neighbor = openTabs[i + 1] || openTabs[i - 1];
+  const pane = paneOf(key);
+  if (pane) pane.remove();
+  openTabs.splice(i, 1);
+  if (wasActive && neighbor) navigate(neighbor.hash);
+  else paintTabs();
+}
+
 function parseHash() {
   const raw = (location.hash || '#/rooms').replace(/^#/, '');
   const qi = raw.indexOf('?');
@@ -711,13 +848,11 @@ function homeHash() {
 }
 
 function renderNotFound() {
-  shell.classList.remove('hidden');
-  document.querySelectorAll('.login-wrap').forEach((el) => el.remove());
-  setBreadcrumb('页面不存在');
-  setActiveNav('');
+  if (!beginPage({ name: 'unknown' }, true)) return;
   view.innerHTML = '<div class="empty">' + emptyIcon() + '<h3>页面不存在</h3><p>链接无效，或这个页面已经被移除。</p>'
     + '<button type="button" class="btn primary" id="btnHome">返回首页</button></div>';
-  $('#btnHome').addEventListener('click', () => navigate(homeHash()));
+  view.querySelector('#btnHome').addEventListener('click', () => navigate(homeHash()));
+  view.dataset.ready = '1';
 }
 
 function paginate(list, cur, size) {
@@ -845,9 +980,9 @@ function syncUserChrome() {
 }
 
 function renderLogin() {
+  resetTabs();
   document.querySelectorAll('.login-wrap').forEach((el) => el.remove());
   shell.classList.add('hidden');
-  view.innerHTML = '';
   const wrap = document.createElement('div');
   wrap.className = 'login-wrap';
   wrap.innerHTML = themeSegHtml()
@@ -871,19 +1006,16 @@ function renderLogin() {
 }
 
 function syncBatchBar() {
-  const bar = $('#batchBar');
+  const bar = view && view.querySelector('#batchBar');
   if (!bar) return;
   bar.classList.toggle('open', selectedIds.size > 0);
-  const count = $('#batchCount');
+  const count = bar.querySelector('#batchCount') || bar.querySelector('.count');
   if (count) count.textContent = '已选 ' + selectedIds.size + ' 项';
 }
 
 function renderRooms() {
-  shell.classList.remove('hidden');
-  document.querySelectorAll('.login-wrap').forEach((el) => el.remove());
+  if (!beginPage({ name: 'rooms' })) return;
   syncUserChrome();
-  setBreadcrumb('会议室一览');
-  setActiveNav('rooms');
 
   const filtering = Boolean(filterName.trim() || filterFrom || filterTo || filterFloors.length);
   const pg = paginate(filteredRooms(), page, PAGE_SIZE);
@@ -917,9 +1049,7 @@ function renderRooms() {
       ? '<div class="empty">' + emptyIcon() + '<h3>没有匹配结果</h3><p>试着换个关键字或日期，或重置筛选条件。</p><button type="button" class="btn ghost" id="btnReset2">重置筛选</button></div>'
       : '<div class="empty">' + emptyIcon() + '<h3>还没有会议室</h3><p>创建第一间会议室后，这里会显示它的楼层与容量。</p><button type="button" class="btn primary" id="btnNew2">新建会议室</button></div>');
 
-  view.innerHTML = '<div class="page-head"><h1>会议室一览</h1><div class="actions">'
-    + '<button type="button" class="btn primary" id="btnNew">新建</button></div></div>'
-    + '<div class="filter-bar"><label>名称 <input type="text" class="field" id="filterName" value="' + esc(filterName) + '" placeholder="关键字" /></label>'
+  view.innerHTML = '<div class="filter-bar"><label>名称 <input type="text" class="field" id="filterName" value="' + esc(filterName) + '" placeholder="关键字" /></label>'
     + '<div class="multi-select" id="floorMulti"><button type="button" class="field" id="floorBtn">' + esc(floorLabel) + '</button>'
     + '<div class="multi-drop">' + floors.map((f) => '<label><input type="checkbox" value="' + esc(f) + '"' + (filterFloors.indexOf(f) >= 0 ? ' checked' : '') + ' /> ' + esc(f) + '</label>').join('') + '</div></div>'
     + '<span class="date-range"><span>最近使用</span>'
@@ -927,21 +1057,23 @@ function renderRooms() {
     + '<span class="sep">至</span>'
     + '<input type="date" class="field" id="filterTo" value="' + esc(filterTo) + '" /></span>'
     + '<button type="button" class="btn primary" id="btnSearch">查询</button>'
-    + '<button type="button" class="btn ghost" id="btnReset">重置</button></div>'
+    + '<button type="button" class="btn ghost" id="btnReset">重置</button>'
+    + '<button type="button" class="btn primary" id="btnNew">新建</button></div>'
     + '<div class="batch-bar' + (selectedIds.size ? ' open' : '') + '" id="batchBar"><span class="count" id="batchCount">已选 ' + selectedIds.size + ' 项</span>'
     + '<button type="button" class="btn ghost role-admin-only" id="btnBatchDel">批量删除</button></div>'
     + body;
 
-  $('#btnNew').addEventListener('click', openDrawer);
-  const btnNew2 = $('#btnNew2');
+  const $v = (sel) => view.querySelector(sel);
+  $v('#btnNew').addEventListener('click', openDrawer);
+  const btnNew2 = $v('#btnNew2');
   if (btnNew2) btnNew2.addEventListener('click', openDrawer);
-  $('#filterName').addEventListener('input', (e) => { filterName = e.target.value; });
-  $('#filterFrom').addEventListener('change', (e) => { filterFrom = e.target.value; });
-  $('#filterTo').addEventListener('change', (e) => { filterTo = e.target.value; });
-  $('#btnSearch').addEventListener('click', () => { page = 1; navigate(roomsHash()); });
+  $v('#filterName').addEventListener('input', (e) => { filterName = e.target.value; });
+  $v('#filterFrom').addEventListener('change', (e) => { filterFrom = e.target.value; });
+  $v('#filterTo').addEventListener('change', (e) => { filterTo = e.target.value; });
+  $v('#btnSearch').addEventListener('click', () => { page = 1; navigate(roomsHash()); });
   const doReset = () => { filterName = ''; filterFrom = ''; filterTo = ''; filterFloors = []; sortKey = 'name'; sortDir = 'asc'; page = 1; selectedIds = new Set(); navigate('#/rooms'); };
-  $('#btnReset').addEventListener('click', doReset);
-  const btnReset2 = $('#btnReset2');
+  $v('#btnReset').addEventListener('click', doReset);
+  const btnReset2 = $v('#btnReset2');
   if (btnReset2) btnReset2.addEventListener('click', doReset);
   view.querySelectorAll('th.sortable').forEach((th) => {
     th.addEventListener('click', () => {
@@ -951,8 +1083,8 @@ function renderRooms() {
       navigate(roomsHash());
     });
   });
-  const floorBtn = $('#floorBtn');
-  const floorMulti = $('#floorMulti');
+  const floorBtn = $v('#floorBtn');
+  const floorMulti = $v('#floorMulti');
   if (floorBtn && floorMulti) {
     floorBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -988,7 +1120,7 @@ function renderRooms() {
       syncBatchBar();
     });
   });
-  const checkAll = $('#checkAll');
+  const checkAll = $v('#checkAll');
   if (checkAll) {
     checkAll.addEventListener('change', () => {
       pg.rows.forEach((r) => {
@@ -998,7 +1130,7 @@ function renderRooms() {
       navigate(roomsHash());
     });
   }
-  const btnBatch = $('#btnBatchDel');
+  const btnBatch = $v('#btnBatchDel');
   if (btnBatch) {
     btnBatch.addEventListener('click', () => {
       if (!selectedIds.size) return;
@@ -1018,6 +1150,7 @@ function renderRooms() {
       });
     });
   }
+  view.dataset.ready = '1';
 }
 
 function closeUserMenu() {
@@ -1042,6 +1175,7 @@ function logout() {
   closeModal();
   closeProfile();
   closeDrawer();
+  resetTabs();
   sessionStorage.removeItem(AUTH_KEY);
   pendingHash = '';
   navigate('#/login');
@@ -1101,6 +1235,18 @@ document.addEventListener('keydown', (e) => {
   if (drawer.classList.contains('open')) closeDrawer();
 });
 $('#sidebarToggle').addEventListener('click', () => sidebar.classList.toggle('collapsed'));
+tabsEl.addEventListener('click', (e) => {
+  const closer = e.target.closest('[data-close]');
+  if (closer) {
+    e.preventDefault();
+    closeTab(closer.getAttribute('data-close'));
+    return;
+  }
+  const hit = e.target.closest('[data-tab]');
+  if (!hit) return;
+  const tab = openTabs.find((t) => t.key === hit.getAttribute('data-tab'));
+  if (tab) navigate(tab.hash);
+});
 $('#navBizToggle').addEventListener('click', () => $('#navBiz').classList.toggle('collapsed'));
 $('#navScreenToggle').addEventListener('click', () => $('#navScreen').classList.toggle('collapsed'));
 $('#drawerCancel').addEventListener('click', closeDrawer);
