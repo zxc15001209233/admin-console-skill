@@ -14,7 +14,7 @@ description: Use when the user asks to generate a backend admin, 中后台, CRUD
 | 静态展示 | 按本 Skill 统一壳 + token + 页面模板生成。HTML 内用自建控件（侧栏、顶栏、表格、抽屉、弹窗）。禁止套 `design-taste-frontend`、营销落地页、大屏玻璃卡 |
 | 页面交互 | HTML 内 mock 假交互 |
 | 真实数据 | 字段名 + `USE_MOCK` 开关，不是接口契约 |
-| 工程化 | **本 Skill 只出 HTML 原型**。转 Vue 由 `requirements-to-dev` 按选型 §2 写业务工程，控件换 Element Plus。**布局/菜单/字段保持，不承诺控件皮肤 1:1** |
+| 工程化 | **本 Skill 只出 HTML 原型**。转 Vue 由 `requirements-to-dev` 按选型 §2 写业务工程，控件换 Element Plus。布局/菜单/字段跟 HTML。**控件态必须整份拷贝** [templates/element-theme.less](templates/element-theme.less)，对照 [vue-bridge.md](vue-bridge.md)。禁止用「不承诺 1:1」改吃 EP 出厂默认或大屏 `element-dark` |
 
 ## 启动路径
 
@@ -102,7 +102,7 @@ Step 1 识别入口与启动路径 → Step 2 方案确认单 → Step 3 默认�
 - 交互用原生 JS + mock 假交互
 - 交付 HTML **零本地依赖**；审核脚本只放生成物旁 `review/`，不进 HTML
 
-**同时交付「设计说明」**（Markdown）：菜单 ↔ 页面 ↔ 积木映射、字段表、mock 口径、交互清单、站点地图（含大屏文件名）、角色显隐表（若有）。须写明：转 Vue 后控件换 Element Plus，与本 HTML 皮肤不 1:1。审核结论**禁止**写入设计说明正文。
+**同时交付「设计说明」**（Markdown）：菜单 ↔ 页面 ↔ 积木映射、字段表、mock 口径、交互清单、站点地图（含大屏文件名）、角色显隐表（若有）。须写明：转 Vue 后控件换 Element Plus，实现须整份拷贝 `element-theme.less`（见 `vue-bridge.md`），不要写「皮肤不 1:1 故可用 EP 默认」。审核结论**禁止**写入设计说明正文。
 
 ### Step 5：生成后强制自检
 
@@ -207,6 +207,7 @@ ui-design/
 - 禁止把大屏 token 或玻璃卡模板拷进后台壳
 - 不把大屏嵌进管理内容区
 - 参考图只辅助信息架构，不承诺像素复刻现有后台皮肤
+- 转 Vue：对方必须拷贝 `element-theme.less`，见 [vue-bridge.md](vue-bridge.md)；本 Skill 仍不写工程
 - 完整权限矩阵页、审批流页不发明；角色按钮显隐用「演示角色」，不算权限配置页。演示角色不改 `MOCK.currentUser`；个人中心角色读 `roleLabel`
 - 不写真实路径、错误码、DDL 全文
 - 不做移动端适配
@@ -245,7 +246,7 @@ ui-design/
 
 直连路径见「启动路径」，不走规格门禁。
 
-用户对 HTML 说「转 Vue / 开始开发」：交回 `requirements-to-dev`。无已审核开发计划 → 不得建工程。`templates/admin-shell.vue` 与 `element-theme.less` 只存在于 Skill 目录，供 `requirements-to-dev` 实现阶段对照，不由本 Skill 写入业务仓库。
+用户对 HTML 说「转 Vue / 开始开发」：交回 `requirements-to-dev`。无已审核开发计划 → 不得建工程。`templates/admin-shell.vue` 与 `templates/element-theme.less` 只存在于 Skill 目录，由对方实现阶段**整份拷贝**；对照 [vue-bridge.md](vue-bridge.md)。本 Skill 不把它们写入业务仓库。
 
 ## 参考文件
 
@@ -255,3 +256,4 @@ ui-design/
 - [mock-data-rules.md](mock-data-rules.md) —— mock 规则；混合项目共享实体一致
 - [review-checklist.md](review-checklist.md) —— Step 5.5 审核清单（含单边审核 vs 联合验收）
 - [templates/admin.html](templates/admin.html) —— HTML 壳骨架模板
+- [templates/admin-shell.vue](templates/admin-shell.vue) / [templates/element-theme.less](templates/element-theme.less) / [vue-bridge.md](vue-bridge.md) —— 转 Vue 对照（本 Skill 不写入业务仓库）

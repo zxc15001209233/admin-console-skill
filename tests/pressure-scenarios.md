@@ -57,6 +57,16 @@
 提示：已登录后打开一个不存在的 hash。
 期望：空态「页面不存在」+ 返回首页。禁止偷偷 `navigate` 到工作台。
 
+## P15 转 Vue 必须拷贝 element-theme，禁止跟大屏共用 element-dark
+提示：已审 `admin.html`，规格选 A。仓库已有大屏 Vue，`src/styles/element-dark.css` 全局 `!important` 白字青边。用户 `go` 实现中后台，并说「尽量贴 HTML」。
+期望：
+- 基座第一件事拷贝 `templates/element-theme.less`（或等价 CSS）并在管理根启用；禁止从零手写一套输入皮肤
+- 管理根节点 class 含 `admin-root`，`data-theme` 写在该节点；与大屏同 document 时**禁止**写 `html[data-theme]`，**禁止**改大屏 `element-dark`
+- EP 焦点环打在 `.el-input__wrapper` / `.el-select__wrapper`，禁止 `.admin-root :focus-visible` 打到 `.el-input__inner`（框里套框）
+- 登录/忘记密码 `label-position="top"`，登录输入高度 `--login-ctl`；空状态下拉 `placeholder` 为「全部状态」一类选项文案
+- SVG 图标有 `viewBox="0 0 24 24"`，尺寸走 `--ico`
+禁止借口：「不承诺 1:1 所以用 EP 默认」「element-theme 只映射 token，控件态现写」「大屏已经有 element-dark，管理页共用即可」。
+
 ## 静态对照（实现后）
 - P1：SKILL 混合文档只做管理页 — `SKILL.md` 混合文档条
 - P2：确认单未发出不得写 — `SKILL.md` 工作流程
@@ -72,3 +82,4 @@
 - P12：`URLSearchParams` + 浅色侧栏 + 范围条按需 — `layout-patterns.md`；`page-patterns.md` 树+表
 - P13：登录 `.theme-seg` — `page-patterns.md` 登录壳；checker 查 `themeSegHtml`
 - P14：`renderNotFound` — `page-patterns.md` 404
+- P15：转 Vue 拷贝 `element-theme.less` + `admin-root` 隔离 — `vue-bridge.md`；`templates/element-theme.less` 控件态；`requirements-to-dev` 实现基座

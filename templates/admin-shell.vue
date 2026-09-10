@@ -4,9 +4,12 @@
   个人中心用独立 el-drawer，禁止和业务查看共用一个抽屉
   删除确认用 el-dialog，禁止 window.confirm
   大屏入口：菜单用 a[href="screen.html"] 整页跳转，禁止 iframe 嵌入 router-view
+  登录/忘记密码不在本壳内，但仍须包 .admin-root，el-form label-position="top"
+  对照 vue-bridge.md：整份拷贝 element-theme.less
 -->
 <template>
   <el-config-provider :locale="zhCn">
+    <div class="admin-root" :data-theme="theme">
     <el-container class="admin-shell">
       <!-- 宽/高与 themes.md 的 --sidebar-w / --topbar-h 保持一致，改一处要同步改 token -->
       <el-aside width="232px" class="admin-shell__aside">
@@ -80,9 +83,10 @@
       <p>{{ modalBody }}</p>
       <template #footer>
         <el-button @click="modalOpen = false">取消</el-button>
-        <el-button type="danger" @click="onModalOk">确定</el-button>
+        <el-button type="danger" @click="onModalOk">确定        </el-button>
       </template>
     </el-dialog>
+    </div>
   </el-config-provider>
 </template>
 
@@ -133,7 +137,14 @@ const theme = ref<'light' | 'dark'>('light')
 
 function applyTheme(next: 'light' | 'dark') {
   theme.value = next
-  document.documentElement.dataset.theme = next
+  const admin = document.querySelector('.admin-root')
+  if (admin) admin.setAttribute('data-theme', next)
+  // 与大屏同 document 时禁止写 html[data-theme]，见 vue-bridge.md
+  if (!document.querySelector('#screen, .screen-root')) {
+    document.documentElement.dataset.theme = next
+  } else {
+    delete document.documentElement.dataset.theme
+  }
   localStorage.setItem(themeStorageKey.value, next)
 }
 

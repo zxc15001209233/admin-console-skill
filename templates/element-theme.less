@@ -1,11 +1,14 @@
 /**
- * Element Plus 主题映射 — Skill 对照模板
- * 色值/形状/字号/间距取自 themes.md token
+ * Element Plus 主题映射 — 实现阶段必须整份拷贝（可改 .css）
+ * 含：themes.md token、EP 控件态、与大屏 element-dark 隔离
+ * 对照清单：../vue-bridge.md
  * 禁止自造颜色（含大屏科技青 #00fffc、Element 默认蓝 #2f6fed）
- * 业务工程拷贝后随 html[data-theme] 切换
+ * 管理根必须有 .admin-root[data-theme]；与大屏同页时不要写 html[data-theme]
  */
 
-html[data-theme='light'] {
+html[data-theme='light'],
+.admin-root,
+.admin-root[data-theme='light'] {
   color-scheme: light;
   --bg-page: #f0f2f5;
   --bg-sidebar: #ffffff;
@@ -53,7 +56,8 @@ html[data-theme='light'] {
   --login-win-lit: transparent;
 }
 
-html[data-theme='dark'] {
+html[data-theme='dark'],
+.admin-root[data-theme='dark'] {
   color-scheme: dark;
   --bg-page: #0d1117;
   --bg-sidebar: #141926;
@@ -175,14 +179,15 @@ html[data-theme='dark'] {
   --el-component-size: var(--ctl-h);
 }
 
-html[data-theme='dark'] {
+html[data-theme='dark'],
+.admin-root[data-theme='dark'] {
   --el-bg-color: var(--bg-card);
   --el-text-color-primary: var(--text-1);
   --el-fill-color-blank: var(--bg-input);
 }
 
 /* 精工脸：表头无底色，只留一条下边线（对齐 themes.md「脸」一节） */
-.el-table th.el-table__cell {
+html:has(.admin-root) .el-table th.el-table__cell {
   background: transparent;
   color: var(--text-3);
   font-size: var(--fs-micro);
@@ -191,9 +196,203 @@ html[data-theme='dark'] {
   border-bottom: 1px solid var(--border-strong);
 }
 
-/* 卡片轻阴影、不套边框 */
-.el-card {
+html:has(.admin-root) .el-card {
   border: 0;
   border-radius: var(--radius);
   box-shadow: var(--shadow-1);
+}
+
+/* EP 控件态：对齐 HTML .field，压过大屏 element-dark 的 !important */
+html:has(.admin-root) {
+  --el-font-size-base: 13px;
+  --bg-card: #ffffff;
+  --bg-input: #ffffff;
+  --bg-muted: #f7f8fa;
+  --bg-hover: #f6f7f9;
+  --bg-overlay: rgba(15, 20, 25, 0.45);
+  --text-1: #1a1d24;
+  --text-2: #5c6570;
+  --text-3: #8b939e;
+  --text-on-primary: #ffffff;
+  --border: #e8eaef;
+  --border-strong: #d8dce4;
+  --color-primary: #3b5bdb;
+  --color-primary-hover: #324db8;
+  --color-primary-active: #2b429c;
+  --ring: rgba(59, 91, 219, 0.18);
+  --ring-w: 3px;
+  --danger: #d92d20;
+  --fs-body: 13px;
+  --fs-label: 12px;
+  --fs-micro: 11px;
+  --dur: 0.15s;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --login-ctl: 36px;
+  --sp-1: 4px;
+  --ico: 18px;
+}
+html:has(.admin-root[data-theme='dark']) {
+  --bg-card: #171d26;
+  --bg-input: #11161d;
+  --bg-muted: #1e242e;
+  --bg-hover: #1c222b;
+  --bg-overlay: rgba(0, 0, 0, 0.55);
+  --text-1: #e8edf4;
+  --text-2: #9aa8b5;
+  --text-3: #6b7785;
+  --border: #262d38;
+  --border-strong: #333c4a;
+  --color-primary: #5c7cfa;
+  --color-primary-hover: #7189fb;
+  --color-primary-active: #4c6ef5;
+  --ring: rgba(92, 124, 250, 0.28);
+  --danger: #f97066;
+}
+html:has(.admin-root) .el-input__inner:focus-visible,
+html:has(.admin-root) .el-textarea__inner:focus-visible,
+html:has(.admin-root) .el-select__input:focus-visible {
+  box-shadow: none;
+}
+html:has(.admin-root) .el-input__wrapper,
+html:has(.admin-root) .el-select__wrapper,
+html:has(.admin-root) .el-textarea__inner {
+  background: var(--bg-input) !important;
+  box-shadow: 0 0 0 1px var(--border) inset !important;
+  transition: box-shadow var(--dur) var(--ease);
+}
+html:has(.admin-root) .el-input:hover .el-input__wrapper,
+html:has(.admin-root) .el-select:hover .el-select__wrapper,
+html:has(.admin-root) .el-input__wrapper:hover,
+html:has(.admin-root) .el-select__wrapper:hover {
+  box-shadow: 0 0 0 1px var(--border-strong) inset !important;
+}
+html:has(.admin-root) .el-input__wrapper.is-focus,
+html:has(.admin-root) .el-input__wrapper.is-focus:hover,
+html:has(.admin-root) .el-select__wrapper.is-focused,
+html:has(.admin-root) .el-select__wrapper.is-focus,
+html:has(.admin-root) .el-select__wrapper.is-focused:hover,
+html:has(.admin-root) .el-select__wrapper.is-focus:hover,
+html:has(.admin-root) .el-textarea__inner:focus {
+  box-shadow: 0 0 0 1px var(--color-primary), 0 0 0 var(--ring-w) var(--ring) !important;
+}
+html:has(.admin-root) .el-input__inner,
+html:has(.admin-root) .el-select__selected-item,
+html:has(.admin-root) .el-select__input,
+html:has(.admin-root) .el-textarea__inner {
+  color: var(--text-1) !important;
+  -webkit-text-fill-color: var(--text-1);
+}
+html:has(.admin-root) .el-select__placeholder,
+html:has(.admin-root) .el-input__inner::placeholder,
+html:has(.admin-root) .el-textarea__inner::placeholder {
+  color: var(--text-3) !important;
+  -webkit-text-fill-color: var(--text-3);
+}
+html:has(.admin-root) .el-select,
+html:has(.admin-root) .el-select__wrapper,
+html:has(.admin-root) .el-select-dropdown,
+html:has(.admin-root) .el-select-dropdown__item {
+  font-size: var(--fs-body);
+}
+html:has(.admin-root) .el-popper,
+html:has(.admin-root) .el-popper.is-light,
+html:has(.admin-root) .el-select-dropdown,
+html:has(.admin-root) .el-dropdown-menu,
+html:has(.admin-root) .el-dialog,
+html:has(.admin-root) .el-dialog__header,
+html:has(.admin-root) .el-dialog__body,
+html:has(.admin-root) .el-dialog__footer,
+html:has(.admin-root) .el-message-box,
+html:has(.admin-root) .el-drawer,
+html:has(.admin-root) .el-drawer__header,
+html:has(.admin-root) .el-drawer__body,
+html:has(.admin-root) .el-drawer__footer {
+  --el-bg-color-overlay: var(--bg-card);
+  --el-fill-color-blank: var(--bg-input);
+  --el-text-color-primary: var(--text-1);
+  --el-text-color-regular: var(--text-1);
+  --text-strong: var(--text-1);
+  background: var(--bg-card) !important;
+  color: var(--text-1) !important;
+  border-color: var(--border) !important;
+}
+html:has(.admin-root) .el-select-dropdown__item,
+html:has(.admin-root) .el-dropdown-menu__item {
+  color: var(--text-1) !important;
+}
+html:has(.admin-root) .el-select-dropdown__item.is-hovering,
+html:has(.admin-root) .el-select-dropdown__item:hover,
+html:has(.admin-root) .el-dropdown-menu__item:hover {
+  background: var(--bg-hover) !important;
+  color: var(--text-1) !important;
+}
+html:has(.admin-root) .el-button {
+  --el-button-text-color: var(--text-1);
+  --el-button-bg-color: var(--bg-muted);
+  --el-button-border-color: transparent;
+  --el-button-hover-text-color: var(--text-1);
+  --el-button-hover-bg-color: var(--bg-hover);
+  --el-button-hover-border-color: transparent;
+  border: 0 !important;
+}
+html:has(.admin-root) .el-button--primary {
+  --el-button-text-color: var(--text-on-primary);
+  --el-button-bg-color: var(--color-primary);
+  --el-button-border-color: var(--color-primary);
+  --el-button-hover-text-color: var(--text-on-primary);
+  --el-button-hover-bg-color: var(--color-primary-hover);
+  --el-button-hover-border-color: var(--color-primary-hover);
+  --el-button-active-bg-color: var(--color-primary-active);
+}
+html:has(.admin-root) .el-button--danger {
+  --el-button-text-color: var(--text-on-primary);
+  --el-button-bg-color: var(--danger);
+  --el-button-border-color: var(--danger);
+  --el-button-hover-text-color: var(--text-on-primary);
+}
+html:has(.admin-root) .el-table td.el-table__cell {
+  color: var(--text-1);
+  text-align: left;
+}
+html:has(.admin-root) .el-form-item__label {
+  color: var(--text-2) !important;
+  font-size: var(--fs-label);
+}
+html:has(.admin-root) .el-overlay {
+  background: var(--bg-overlay) !important;
+}
+
+/* 登录卡：标签在上；输入与按钮同高 --login-ctl（页面须 label-position="top"） */
+html:has(.admin-root) .login-card .el-form-item--label-top .el-form-item__label,
+html:has(.admin-root) .ar-card .el-form-item--label-top .el-form-item__label {
+  height: auto;
+  line-height: 1.5;
+  margin-bottom: var(--sp-1);
+  padding: 0;
+  justify-content: flex-start;
+}
+html:has(.admin-root) .login-card .el-input,
+html:has(.admin-root) .ar-card .el-input {
+  --el-input-height: var(--login-ctl);
+  --el-input-inner-height: calc(var(--login-ctl) - 2px);
+}
+html:has(.admin-root) .login-card .el-input__wrapper,
+html:has(.admin-root) .ar-card .el-input__wrapper {
+  min-height: var(--login-ctl);
+}
+
+/* 线性图标：path 按 24 单位画，必须 viewBox="0 0 24 24" */
+html:has(.admin-root) .nav-ico,
+html:has(.admin-root) .theme-ico,
+html:has(.admin-root) .ar-nav-ico {
+  width: var(--ico);
+  height: var(--ico);
+  flex-shrink: 0;
+  display: block;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }

@@ -94,7 +94,7 @@ Agent 能读到本 Skill 后即可描述需求，例如：
 | HTML 单文件 `admin.html` | 零本地构建，双击即看；默认目录 `ui-design/` | 产品评审、演示、对齐字段和菜单 |
 | Vue 工程 | **不由本 Skill 生成**；对照模板仅留在 `templates/admin-shell.vue` | 已审开发计划后由 `requirements-to-dev` 按选型 §2 写 |
 
-HTML 自建控件；转 Vue 后换 Element Plus。布局/菜单/字段保持，**不承诺控件皮肤 1:1**。
+HTML 自建控件；转 Vue 后换 Element Plus。布局/菜单/字段跟 HTML。控件态拷贝 `templates/element-theme.less`，见 [vue-bridge.md](vue-bridge.md)。
 
 ## 文件说明
 
@@ -109,7 +109,8 @@ HTML 自建控件；转 Vue 后换 Element Plus。布局/菜单/字段保持，*
 | `review-checklist.md` | Step 5.5：单边审核 vs 混合联合验收 |
 | `templates/admin.html` | 单文件壳示例 |
 | `templates/admin-shell.vue` | 实现阶段对照用，禁止本 Skill 写入业务仓库 |
-| `templates/element-theme.less` | Element Plus 浅/深 token 映射 |
+| `templates/element-theme.less` | 必须整份拷贝：token + EP 控件态 + 大屏隔离 |
+| `vue-bridge.md` | 转 Vue 对照契约（根节点、焦点环、登录表单） |
 | `scripts/check-template.js` | 校验 HTML 是否踩大屏脸、token 是否齐、有无裸色/裸圆角/散写 28px·3px、登录用户区、弹窗；可传生成物路径 |
 
 ## 主题
